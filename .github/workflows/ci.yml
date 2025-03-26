@@ -32,12 +32,16 @@ jobs:
       # Consider using pre-commit.ci for open source project
       - name: Upgrade pip
         run: pip install --upgrade pip
+
       - name: Install poetry
         run: pip install poetry
+
       - name: Install dependencies
         run: poetry install --no-root --only=dev
+
       - name: Install pre-commit
         run: pip install pre-commit
+
       - name: Run pre-commit
         run: pre-commit run --all-files
 
