@@ -1,6 +1,8 @@
 from django.db import models
 
-from timetable.core.enums import TypeOfClass, TypeOfWeek, TypeOfDay
+from timetable.core.enums import TypeOfClass
+from timetable.core.enums import TypeOfDay
+from timetable.core.enums import TypeOfWeek
 from timetable.users.models import Teacher
 
 
@@ -36,7 +38,7 @@ class TimeSubject(models.Model):
         verbose_name_plural = "время пар"
 
     def __str__(self):
-        return f"{self.number}: {self.start_time.strftime('%H:%M')} - {self.end_time.strftime('%H:%M')}"
+        return f"пара {self.number}"
 
 
 class Subject(models.Model):
