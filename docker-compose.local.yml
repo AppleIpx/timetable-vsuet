@@ -14,7 +14,8 @@ services:
       - postgres
       - redis
     volumes:
-      - .:/app:z
+      - /app
+    working_dir: /app
     env_file:
       - ./.envs/.local/.django
       - ./.envs/.local/.postgres
@@ -40,7 +41,6 @@ services:
 
     volumes:
       - timetable_local_redis_data:/data
-
 
   celeryworker:
     <<: *django
