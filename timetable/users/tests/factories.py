@@ -16,6 +16,7 @@ class UserFactory(DjangoModelFactory[User]):
     @post_generation
     def password(
         self,
+        create,
         extracted: Sequence[Any],
         **kwargs,
     ):
