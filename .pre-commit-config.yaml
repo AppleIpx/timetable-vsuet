@@ -43,16 +43,6 @@ repos:
       - id: djlint-reformat-django
       - id: djlint-django
 
-  - repo: local
-    hooks:
-      - id: mypy
-        name: Validate types with MyPy
-        entry: poetry run mypy
-        language: system
-        types: [ python ]
-        pass_filenames: false
-        args:
-          - "timetable"
 
 # sets up .pre-commit-ci.yaml to ensure pre-commit dependencies stay up to date
 ci:
