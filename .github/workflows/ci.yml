@@ -28,8 +28,10 @@ jobs:
       - name: Set up Python 3.12
         uses: actions/setup-python@v5
         with:
-          python-version-file: '3.12'
+          python-version: '3.12'
       # Consider using pre-commit.ci for open source project
+      - name: Upgrade pip
+        run: pip install --upgrade pip
       - name: Install poetry
         run: pip install poetry
       - name: Install dependencies
@@ -37,7 +39,7 @@ jobs:
       - name: Install pre-commit
         run: pip install pre-commit
       - name: Run pre-commit
-        uses: pre-commit run --all-files
+        run: pre-commit run --all-files
 
   # With no caching at all the entire ci process takes 3m to complete!
   pytest:
