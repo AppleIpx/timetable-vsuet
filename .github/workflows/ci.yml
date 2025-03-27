@@ -25,13 +25,19 @@ jobs:
       - name: Checkout Code Repository
         uses: actions/checkout@v4
 
-      - name: Set up Python
+      - name: Set up Python 3.12
         uses: actions/setup-python@v5
         with:
-          python-version-file: '.python-version'
+          python-version: '3.12'
       # Consider using pre-commit.ci for open source project
+      - name: Upgrade pip
+        run: pip install --upgrade pip
+
+      - name: Install pre-commit
+        run: pip install pre-commit
+
       - name: Run pre-commit
-        uses: pre-commit/action@v3.0.1
+        run: pre-commit run --all-files
 
   # With no caching at all the entire ci process takes 3m to complete!
   pytest:
@@ -53,8 +59,17 @@ jobs:
       - name: Run DB Migrations
         run: docker compose -f docker-compose.local.yml run --rm django python manage.py migrate
 
+      - name: mypy
+        run: docker compose -f docker-compose.local.yml run --rm django mypy .
+
       - name: Run Django Tests
         run: docker compose -f docker-compose.local.yml run django pytest
 
       - name: Tear down the Stack
-        run: docker compose -f docker-compose.local.yml down
+        run: docker compose -f docker-compose.local.yml down --rmi all
+
+      - name: Remove all stopped containers
+        run: docker ps -aq | xargs -r docker rm
+
+      - name: Delete docker image
+        run: docker image rm -f timetable_local_django
