@@ -24,3 +24,7 @@ class User(AbstractUser):
 
         """
         return reverse("users:detail", kwargs={"username": self.username})
+
+
+class Teacher(User):
+    full_name = CharField(max_length=100)
