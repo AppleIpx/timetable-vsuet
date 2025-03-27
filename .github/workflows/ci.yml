@@ -59,8 +59,14 @@ jobs:
       - name: Run DB Migrations
         run: docker compose -f docker-compose.local.yml run --rm django python manage.py migrate
 
+      - name: mypy
+        run: docker compose -f docker-compose.local.yml run --rm django mypy .
+
       - name: Run Django Tests
         run: docker compose -f docker-compose.local.yml run django pytest
 
       - name: Tear down the Stack
         run: docker compose -f docker-compose.local.yml down
+
+      - name: Delete docker image
+        run: docker image rm timetable_local_django
