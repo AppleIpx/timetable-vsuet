@@ -6,9 +6,14 @@ from timetable.core.enums import TypeOfWeek
 from timetable.users.models import Teacher
 
 
-class Faculty(models.Model):
+class BaseModel(models.Model):
     name = models.CharField(max_length=100)
 
+    class Meta:
+        abstract = True
+
+
+class Faculty(BaseModel):
     class Meta:
         verbose_name = "факультет"
         verbose_name_plural = "факультеты"
@@ -17,15 +22,22 @@ class Faculty(models.Model):
         return f"факультет {self.name}"
 
 
-class Group(models.Model):
-    name = models.CharField(max_length=50)
-
+class Group(BaseModel):
     class Meta:
         verbose_name = "группа"
         verbose_name_plural = "группы"
 
     def __str__(self):
         return self.name
+
+
+class Audience(BaseModel):
+    class Meta:
+        verbose_name = "аудитория"
+        verbose_name_plural = "аудитории"
+
+    def __str__(self):
+        return f"{self.name}"
 
 
 class TimeSubject(models.Model):
@@ -43,7 +55,11 @@ class TimeSubject(models.Model):
 
 class Subject(models.Model):
     name = models.CharField(max_length=100)
-    audience = models.CharField(max_length=50)
+    audience = models.ForeignKey(
+        Audience,
+        null=True,
+        on_delete=models.SET_NULL,
+    )
 
     type_of_day = models.CharField(
         max_length=15,
