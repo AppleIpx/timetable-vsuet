@@ -1,4 +1,5 @@
 from django.contrib.auth.models import AbstractUser
+from django.db import models
 from django.db.models import CharField
 from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
@@ -26,5 +27,12 @@ class User(AbstractUser):
         return reverse("users:detail", kwargs={"username": self.username})
 
 
-class Teacher(User):
-    full_name = CharField(max_length=100)
+class Teacher(models.Model):
+    full_name = models.CharField(max_length=100)
+
+    class Meta:
+        verbose_name = "преподаватель"
+        verbose_name_plural = "преподаватели"
+
+    def __str__(self):
+        return f"{self.full_name}"

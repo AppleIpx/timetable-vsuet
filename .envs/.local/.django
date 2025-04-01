@@ -13,3 +13,7 @@ CELERY_BROKER_URL=redis://redis:6379/0
 # Flower
 CELERY_FLOWER_USER=debug
 CELERY_FLOWER_PASSWORD=debug
+
+# Timetable
+# ------------------------------------------------------------------------------
+TIMETABLE_URL=https://timetable.vsuet.ru/index.php

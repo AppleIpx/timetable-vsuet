@@ -41,4 +41,4 @@ class UserAdmin(auth_admin.UserAdmin):
     search_fields = ["name"]
 
 
-admin.register(Teacher)
+admin.site.register(Teacher)
