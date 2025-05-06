@@ -1,8 +1,5 @@
 from django.db import models
 
-from timetable.core.enums import TypeOfClass
-from timetable.core.enums import TypeOfDay
-from timetable.core.enums import TypeOfWeek
 from timetable.users.models import Teacher
 
 
@@ -41,7 +38,10 @@ class Audience(BaseModel):
 
 
 class TimeSubject(models.Model):
-    number = models.PositiveSmallIntegerField(unique=True)
+    number = models.PositiveSmallIntegerField(
+        unique=True,
+        verbose_name="номер пары по счету",
+    )
     start_time = models.TimeField()
     end_time = models.TimeField()
 
@@ -60,24 +60,18 @@ class Subject(models.Model):
         null=True,
         on_delete=models.SET_NULL,
     )
-
-    type_of_day = models.CharField(
-        max_length=15,
-        choices=[(tag.value, tag.name) for tag in TypeOfDay],
-    )
-
-    type_of_week = models.CharField(
-        max_length=15,
-        choices=[(tag.value, tag.name) for tag in TypeOfWeek],
-    )
-    type_of_classes = models.CharField(
-        max_length=10,
-        choices=[(tag.value, tag.name) for tag in TypeOfClass],
-    )
+    type_of_day = models.CharField(max_length=20, verbose_name="день недели")
+    type_of_week = models.CharField(max_length=20, verbose_name="тип недели")
+    type_of_classes = models.CharField(max_length=20, verbose_name="тип занятия")
     time_subject = models.ForeignKey(TimeSubject, on_delete=models.CASCADE)
-    teacher = models.ForeignKey(Teacher, on_delete=models.CASCADE)
-    faculty = models.ForeignKey(Faculty, on_delete=models.CASCADE)
+    teacher = models.ForeignKey(
+        Teacher,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+    )
     group = models.ForeignKey(Group, on_delete=models.CASCADE)
+    subgroup = models.PositiveSmallIntegerField()
 
     class Meta:
         verbose_name = "предмет"
@@ -85,3 +79,41 @@ class Subject(models.Model):
 
     def __str__(self):
         return self.name
+
+
+class ErrorSubject(models.Model):
+    name = models.CharField(max_length=100, null=True, blank=True)
+    audience = models.CharField(max_length=100, null=True, blank=True)
+    type_of_day = models.CharField(
+        max_length=20,
+        verbose_name="день недели",
+        blank=True,
+        null=True,
+    )
+    type_of_week = models.CharField(
+        max_length=20,
+        verbose_name="тип недели",
+        blank=True,
+        null=True,
+    )
+    type_of_classes = models.CharField(
+        max_length=20,
+        verbose_name="тип занятия",
+        blank=True,
+        null=True,
+    )
+    time_subject = models.ForeignKey(
+        TimeSubject,
+        on_delete=models.CASCADE,
+        default=1,
+        blank=True,
+        null=True,
+    )
+    teacher = models.CharField(blank=True, null=True, max_length=100)
+    group = models.CharField(blank=True, null=True, max_length=100)
+    subgroup = models.PositiveSmallIntegerField(blank=True, null=True)
+    cause_of_error = models.TextField(null=True, blank=True)
+
+    class Meta:
+        verbose_name = "предмет с ошибкой"
+        verbose_name_plural = "предметы с ошибками"

@@ -1,0 +1,56 @@
+{% extends "admin/base_site.html" %}
+
+{% block content %}
+  <h1>Данные для обновления</h1>
+  <form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    <table>
+      <thead>
+        <tr>
+          <th>Тип данных</th>
+          <th>Файл для загрузки</th>
+          <th>Действие</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for index in indexes %}
+          <tr>
+            <td>
+              {% if index == "Обновление расписания" %}
+                Расписание занятий
+              {% elif index == "Обновление преподавателей" %}
+                Преподаватели
+              {% elif index == "Обновление аудиторий" %}
+                Аудитории
+              {% else %}
+                {{ index }}
+              {% endif %}
+            </td>
+            <td>
+              <input type="file"
+                     name="excel_{{ forloop.counter }}"
+                     accept=".xlsx, .xls"
+                     class="file-input" />
+              <input type="hidden"
+                     name="index_type_{{ forloop.counter }}"
+                     value="{{ index }}" />
+            </td>
+            <td>
+              <button type="submit" name="update_type" value="{{ index }}" class="button">
+                {% if index == "Обновление расписания" %}
+                  Обновить расписание
+                {% elif index == "Обновление преподавателей" %}
+                  Обновить список преподавателей
+                {% elif index == "Обновление аудиторий" %}
+                  Обновить перечень аудиторий
+                {% else %}
+                  Обновить
+                {% endif %}
+              </button>
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </form>
+{% endblock %}
