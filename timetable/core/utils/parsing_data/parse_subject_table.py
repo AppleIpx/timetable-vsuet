@@ -15,7 +15,6 @@ def parse_line_flexible(
     prepared_line = prepare_prepare_line(line=line)
     type_class, rest = get_type_of_class(prepared_line=prepared_line)
     parts = rest.split()
-    print("parts", parts)
     group, group_index = get_group(parts=parts)
     audience = get_audience(
         parts=parts,

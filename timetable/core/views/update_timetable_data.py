@@ -5,6 +5,10 @@ from django.contrib.admin.views.decorators import staff_member_required
 from django.shortcuts import redirect
 from django.shortcuts import render
 
+from timetable.core.utils.parsing_exel import parsing_audience_exel
+from timetable.core.utils.parsing_exel import parsing_teachers_exel
+from timetable.core.utils.parsing_exel import parsing_timetable_exel
+
 ALLOWED_INDEXES: Final = frozenset(
     ["Обновление расписания", "Обновление преподавателей", "Обновление аудиторий"],
 )
@@ -35,16 +39,13 @@ def update_timetable_view(request):
 
         try:
             if update_type == "Обновление расписания":
-                pass
-                # handle_schedule_file(excel_file)
+                parsing_timetable_exel(excel_file)
             elif update_type == "Обновление преподавателей":
-                pass
-                # handle_teachers_file(excel_file)
+                parsing_teachers_exel(excel_file)
             elif update_type == "Обновление аудиторий":
-                pass
-                # handle_rooms_file(excel_file)
+                parsing_audience_exel(excel_file)
             messages.success(request, f"{update_type} успешно завершено.")
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001
             messages.error(request, f"Ошибка при обработке файла: {e}")
 
         return redirect(request.path)

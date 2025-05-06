@@ -13,7 +13,6 @@ def validate_audience_and_group(data: str):
     try:
         return match.group(1), match.group(2)
     except AttributeError:
-        logging.exception(
-            f"При парсинге аудитории и группы произошла ошибка, исходные данные: {data}",
-        )
+        exception_msg = f"При парсинге аудитории и группы произошла ошибка, исходные данные: {data}"
+        logging.exception(exception_msg)
         return "", ""

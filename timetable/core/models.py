@@ -82,21 +82,21 @@ class Subject(models.Model):
 
 
 class ErrorSubject(models.Model):
-    name = models.CharField(max_length=100, null=True, blank=True)
-    audience = models.CharField(max_length=100, null=True, blank=True)
-    type_of_day = models.CharField(
+    name = models.CharField(max_length=100, null=True, blank=True)  # noqa: DJ001
+    audience = models.CharField(max_length=100, null=True, blank=True)  # noqa: DJ001
+    type_of_day = models.CharField(  # noqa: DJ001
         max_length=20,
         verbose_name="день недели",
         blank=True,
         null=True,
     )
-    type_of_week = models.CharField(
+    type_of_week = models.CharField(  # noqa: DJ001
         max_length=20,
         verbose_name="тип недели",
         blank=True,
         null=True,
     )
-    type_of_classes = models.CharField(
+    type_of_classes = models.CharField(  # noqa: DJ001
         max_length=20,
         verbose_name="тип занятия",
         blank=True,
@@ -109,11 +109,14 @@ class ErrorSubject(models.Model):
         blank=True,
         null=True,
     )
-    teacher = models.CharField(blank=True, null=True, max_length=100)
-    group = models.CharField(blank=True, null=True, max_length=100)
+    teacher = models.CharField(blank=True, null=True, max_length=100)  # noqa: DJ001
+    group = models.CharField(blank=True, null=True, max_length=100)  # noqa: DJ001
     subgroup = models.PositiveSmallIntegerField(blank=True, null=True)
-    cause_of_error = models.TextField(null=True, blank=True)
+    cause_of_error = models.TextField(null=True, blank=True)  # noqa: DJ001
 
     class Meta:
         verbose_name = "предмет с ошибкой"
         verbose_name_plural = "предметы с ошибками"
+
+    def __str__(self):
+        return self.name

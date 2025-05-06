@@ -20,9 +20,7 @@ class DayOfWeekFilter(admin.SimpleListFilter):
         qs = model_admin.model.objects.values_list("type_of_day", flat=True).distinct()
         existing_days = sorted(
             set(qs),
-            key=lambda day: self.ORDERED_DAYS.index(day.lower())
-            if day.lower() in self.ORDERED_DAYS
-            else 999,
+            key=lambda day: self.ORDERED_DAYS.index(day.lower()) if day.lower() in self.ORDERED_DAYS else 999,
         )
         return [(day, day.capitalize()) for day in existing_days]
 

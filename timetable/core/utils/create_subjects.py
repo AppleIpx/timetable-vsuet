@@ -26,7 +26,7 @@ def transformation_string_time(
     string_time: str,
 ) -> time:
     time_subject_str = string_time.strip()
-    return datetime.strptime(time_subject_str.split("-")[0], "%H.%M").time()
+    return datetime.strptime(time_subject_str.split("-")[0], "%H.%M").time()  # noqa: DTZ007
 
 
 def get_data(
@@ -34,16 +34,6 @@ def get_data(
     data_day: ResultSet,
     db_cache: dict[str, dict[str, models.Model]],
 ) -> dict[str, str]:
-    # type_class, subject_name = validate_subject_name_type_class(data_subject[0])
-    # professor_name = validate_professor_name(
-    #     professor_name=data_subject[1].find(
-    #         "div",
-    #         {"class": "box_rounded link_prepod px-3"},
-    #     ).text,
-    #     data_subject_tag=data_subject_tag.text,
-    #     db_cache=db_cache
-    # )
-    # audience, group = validate_audience_and_group(data=data_subject[2].text)
     parsed_data = parse_line_flexible(
         line=data_subject_tag.text,
         db_cache=db_cache,
@@ -103,9 +93,11 @@ def save_subject(subject_data: dict[str, models.Model | str]) -> None:
         },
     )
     if created:
-        logging.info(f"Created new subject: {obj.name}")
+        info_msg = f"Created new subject: {obj.name}"
+        logging.info(info_msg)
     else:
-        logging.info(f"Updated existing subject: {obj.name}")
+        info_msg = f"Updated existing subject: {obj.name}"
+        logging.info(info_msg)
 
 
 def validate_objects(
@@ -141,10 +133,12 @@ def validate_objects(
         if obj:
             validated_data[data_key] = obj
         else:
-            logging.warning(f"В БД не найдено значение для '{data_key}': {value}")
+            warning_msg = f"В БД не найдено значение для '{data_key}': {value}"
+            logging.warning(warning_msg)
             validated_data.update(_collect_base_data())
+            msg = f"Collect Data Error: '{data_key}' with value '{value}' not found in DB cache."
             raise CollectDataError(
-                f"Collect Data Error: '{data_key}' with value '{value}' not found in DB cache.",
+                msg,
                 partial_data=validated_data,
             )
 
@@ -157,11 +151,9 @@ def validate_data(
     db_cache: dict[str, dict[str, models.Model]],
 ) -> dict[str, models.Model | str]:
     data_day = subject.find_all("th", {"class": "align-middle"})
-    # data_subject_content = subject.find("td", {"class": "align-middle"}).contents
     data_subject_tag = subject.find("td", {"class": "align-middle"})
     parsed_data = get_data(
         data_day=data_day,
-        # data_subject_content=data_subject_content,
         data_subject_tag=data_subject_tag,
         db_cache=db_cache,
     )
@@ -178,7 +170,6 @@ def create_subjects(all_subjects: ResultSet) -> None:
             partial = e.partial_data
             msg_error = f"Ошибка валидации при парсинге предмета: {e}"
             logging.exception(msg_error)
-            print("ababababa", partial)
 
             ErrorSubject.objects.create(
                 name=partial.get("subject_name"),
@@ -193,4 +184,5 @@ def create_subjects(all_subjects: ResultSet) -> None:
                 cause_of_error=str(e),
             )
         except Exception as e:
-            logging.exception(f"Неизвестная ошибка при парсинге предмета: {e}")
+            exception_msg = f"Неизвестная ошибка при парсинге предмета: {e}"
+            logging.exception(exception_msg)
