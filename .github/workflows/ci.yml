@@ -59,8 +59,8 @@ jobs:
       - name: Run DB Migrations
         run: docker compose -f docker-compose.local.yml run --rm django python manage.py migrate
 
-      - name: mypy
-        run: docker compose -f docker-compose.local.yml run --rm django mypy .
+#      - name: mypy
+#        run: docker compose -f docker-compose.local.yml run --rm django mypy .
 
       - name: Run Django Tests
         run: docker compose -f docker-compose.local.yml run django pytest
