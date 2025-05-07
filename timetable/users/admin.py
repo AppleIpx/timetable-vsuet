@@ -41,4 +41,6 @@ class UserAdmin(auth_admin.UserAdmin):
     search_fields = ["name"]
 
 
-admin.site.register(Teacher)
+@admin.register(Teacher)
+class TeacherAdmin(admin.ModelAdmin):
+    search_fields = ["full_name"]

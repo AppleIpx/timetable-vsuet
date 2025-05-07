@@ -54,6 +54,7 @@ indent_size = 2
 
 [tool.ruff]
 target-version = "py312"
+line-length = 119
 # Exclude a variety of commonly ignored directories.
 exclude = [
     ".bzr",
@@ -141,6 +142,7 @@ select = [
 ignore = [
   "S101", # Use of assert detected https://docs.astral.sh/ruff/rules/assert/
   "RUF012", # Mutable class attributes should be annotated with `typing.ClassVar`
+  "RUF001",
   "SIM102", # sometimes it's better to nest
   "UP038", # Checks for uses of isinstance/issubclass that take a tuple
           # of types for comparison.
