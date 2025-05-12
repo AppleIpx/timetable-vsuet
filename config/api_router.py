@@ -10,5 +10,5 @@ router = DefaultRouter() if settings.DEBUG else SimpleRouter()
 app_name = "api"
 urlpatterns = [
     path("users/", include("timetable.users.urls")),
-    path("timetable-data/", include("timetable.core.urls")),
+    path("timetable/", include("timetable.core.urls")),
 ]
