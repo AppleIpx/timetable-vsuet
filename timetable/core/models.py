@@ -1,5 +1,8 @@
 from django.db import models
 
+from timetable.core.enums import TYPE_OF_CLASSES_CHOICES
+from timetable.core.enums import TYPE_OF_DAY_CHOICES
+from timetable.core.enums import TYPE_OF_WEEK_CHOICES
 from timetable.users.models import Teacher
 
 
@@ -60,9 +63,24 @@ class Subject(models.Model):
         null=True,
         on_delete=models.SET_NULL,
     )
-    type_of_day = models.CharField(max_length=20, verbose_name="день недели")
-    type_of_week = models.CharField(max_length=20, verbose_name="тип недели")
-    type_of_classes = models.CharField(max_length=20, verbose_name="тип занятия")
+    type_of_day = models.CharField(
+        max_length=20,
+        verbose_name="день недели",
+        choices=TYPE_OF_DAY_CHOICES,
+        default="",
+    )
+    type_of_week = models.CharField(
+        max_length=20,
+        verbose_name="тип недели",
+        choices=TYPE_OF_WEEK_CHOICES,
+        default="",
+    )
+    type_of_classes = models.CharField(
+        max_length=30,
+        verbose_name="тип занятия",
+        choices=TYPE_OF_CLASSES_CHOICES,
+        default="",
+    )
     time_subject = models.ForeignKey(TimeSubject, on_delete=models.CASCADE)
     teacher = models.ForeignKey(
         Teacher,
