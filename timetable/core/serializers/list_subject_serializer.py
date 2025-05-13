@@ -7,7 +7,7 @@ from timetable.core.serializers.time_subject_serializer import TimeSubjectSerial
 from timetable.users.serializer import TeacherSerializer
 
 
-class ListSubjectSerializer(serializers.ModelSerializer):
+class SubjectSerializer(serializers.ModelSerializer):
     audience = AudienceSerializer()
     time_subject = TimeSubjectSerializer()
     teacher = TeacherSerializer()
@@ -16,6 +16,7 @@ class ListSubjectSerializer(serializers.ModelSerializer):
     class Meta:
         model = Subject
         fields = (
+            "id",
             "name",
             "audience",
             "type_of_day",
