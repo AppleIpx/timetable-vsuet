@@ -4,7 +4,7 @@ from timetable.core.models import Subject
 from timetable.core.serializers.audience_serializer import AudienceSerializer
 from timetable.core.serializers.group_serializer import GroupSerializer
 from timetable.core.serializers.time_subject_serializer import TimeSubjectSerializer
-from timetable.users.serializer import TeacherSerializer
+from timetable.users.api.serializers import TeacherSerializer
 
 
 class SubjectSerializer(serializers.ModelSerializer):

@@ -28,11 +28,13 @@ class User(AbstractUser):
 
 
 class Teacher(models.Model):
-    full_name = models.CharField(max_length=100)
+    first_name = models.CharField(max_length=100, default="Alex")
+    last_name = models.CharField(max_length=100, default="Smith")
+    patronymic = models.CharField(max_length=100, default="", blank=True)
 
     class Meta:
         verbose_name = "преподаватель"
         verbose_name_plural = "преподаватели"
 
     def __str__(self):
-        return f"{self.full_name}"
+        return f"{self.last_name} {self.first_name}"

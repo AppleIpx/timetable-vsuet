@@ -8,10 +8,10 @@ from django.http import HttpResponseRedirect
 from django.test import RequestFactory
 from django.urls import reverse
 
+from timetable.users.api.views.user import UserUpdateView
+from timetable.users.api.views.user import user_detail_view
 from timetable.users.models import User
 from timetable.users.tests.factories import UserFactory
-from timetable.users.views import UserUpdateView
-from timetable.users.views import user_detail_view
 
 pytestmark = pytest.mark.django_db
 

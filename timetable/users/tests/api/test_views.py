@@ -1,7 +1,7 @@
 import pytest
 from rest_framework.test import APIRequestFactory
 
-from timetable.users.api.views import UserViewSet
+from timetable.users.api.views.user import UserViewSet
 from timetable.users.models import User
 
 
