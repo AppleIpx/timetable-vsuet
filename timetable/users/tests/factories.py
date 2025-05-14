@@ -5,6 +5,7 @@ from factory import Faker
 from factory import post_generation
 from factory.django import DjangoModelFactory
 
+from timetable.users.models import Teacher
 from timetable.users.models import User
 
 
@@ -44,3 +45,12 @@ class UserFactory(DjangoModelFactory[User]):
     class Meta:
         model = User
         django_get_or_create = ["username"]
+
+
+class TeacherFactory(DjangoModelFactory):
+    first_name = Faker("first_name")
+    last_name = Faker("last_name")
+    patronymic = Faker("patronymic")
+
+    class Meta:
+        model = Teacher
