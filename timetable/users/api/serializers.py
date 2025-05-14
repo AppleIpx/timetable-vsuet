@@ -17,4 +17,4 @@ class UserSerializer(serializers.ModelSerializer[User]):
 class TeacherSerializer(serializers.ModelSerializer):
     class Meta:
         model = Teacher
-        fields = ("first_name", "last_name", "patronymic")
+        fields = ("id", "first_name", "last_name", "patronymic")
