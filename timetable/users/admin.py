@@ -43,4 +43,4 @@ class UserAdmin(auth_admin.UserAdmin):
 
 @admin.register(Teacher)
 class TeacherAdmin(admin.ModelAdmin):
-    search_fields = ["full_name"]
+    search_fields = ["last_name"]
