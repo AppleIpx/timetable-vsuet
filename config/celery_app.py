@@ -26,3 +26,6 @@ def config_loggers(*args, **kwargs):
 
 # Load task modules from all registered Django app configs.
 app.autodiscover_tasks()
+
+# celery -A config.celery_app worker -l info
+# celery -A config.celery_app beat --scheduler django_celery_beat.schedulers:DatabaseScheduler --loglevel=info

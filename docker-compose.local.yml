@@ -14,7 +14,7 @@ services:
       - postgres
       - redis
     volumes:
-      - /app
+      - .:/app
     working_dir: /app
     env_file:
       - ./.envs/.local/.django
@@ -69,3 +69,14 @@ services:
     ports:
       - '5555:5555'
     command: /start-flower
+
+  opensearch:
+    image: opensearchproject/opensearch:2.8.0
+    container_name: timetable_local_opensearch_backend
+    ports:
+      - '9200:9200'
+    environment:
+      - discovery.type=single-node
+      - bootstrap.memory_lock=true
+      - "OPENSEARCH_JAVA_OPTS=-Xms512m -Xmx512m"
+      - "DISABLE_SECURITY_PLUGIN=true"

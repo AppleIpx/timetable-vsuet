@@ -11,4 +11,5 @@ app_name = "api"
 urlpatterns = [
     path("users/", include("timetable.users.urls")),
     path("timetable/", include("timetable.core.urls")),
+    path("search/", include("timetable.search.urls")),
 ]
