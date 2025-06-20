@@ -1,0 +1,23 @@
+services:
+  django:
+    build:
+      context: .
+      dockerfile: ./compose/local/django/Dockerfile
+    image: timetable_test_django
+    container_name: timetable_test_django
+    depends_on:
+      - postgres
+    env_file:
+      - ./.envs/.local/.django
+      - ./.envs/.local/.postgres
+    command:
+      - /start
+
+  postgres:
+    build:
+      context: .
+      dockerfile: ./compose/production/postgres/Dockerfile
+    image: timetable_production_postgres
+    container_name: timetable_test_postgres
+    env_file:
+      - ./.envs/.local/.postgres
