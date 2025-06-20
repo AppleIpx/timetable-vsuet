@@ -348,5 +348,25 @@ SPECTACULAR_SETTINGS = {
     "SERVE_PERMISSIONS": ["rest_framework.permissions.IsAdminUser"],
     "SCHEMA_PATH_PREFIX": "/api/",
 }
-# Your stuff...
+
+# Opensearch
 # ------------------------------------------------------------------------------
+USE_OPENSEARCH = env.bool("USE_OPENSEARCH", False)
+if USE_OPENSEARCH:
+    OPENSEARCH_DSL = {
+        "default": {
+            "hosts": env("OPENSEARCH_URL"),
+        },
+    }
+    OPENSEARCH_PASSWORD = env("OPENSEARCH_PASSWORD", default="")
+    if OPENSEARCH_PASSWORD:
+        OPENSEARCH_DSL["default"].update(
+            {
+                "http_auth": (env("OPENSEARCH_USER"), OPENSEARCH_PASSWORD),
+                "use_ssl": True,
+                "verify_certs": True,
+                "ca_certs": env("SSL_CA_CERTS"),
+            },
+        )
+    INSTALLED_APPS += ["django_opensearch_dsl"]
+    OPENSEARCH_DSL_AUTO_REFRESH = True

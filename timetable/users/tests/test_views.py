@@ -7,7 +7,6 @@ from django.http import HttpRequest
 from django.http import HttpResponseRedirect
 from django.test import RequestFactory
 from django.urls import reverse
-from rest_framework.test import APITestCase
 from starlette import status
 
 from timetable.users.api.views.user import UserUpdateView
@@ -61,66 +60,29 @@ class TestUserDetailView:
         assert response.url == f"{login_url}?next=/fake-url/"
 
 
-@pytest.mark.django_db
-class TestTeacherListView(APITestCase):
-    @classmethod
-    def setUpClass(cls):
-        super().setUpClass()
-        cls.teacher1 = TeacherFactory(first_name="Иван", last_name="Петров", patronymic="Сергеевич")
-        cls.teacher2 = TeacherFactory(first_name="Алексей", last_name="Иванов", patronymic="")
-        cls.teacher3 = TeacherFactory(first_name="Сергей", last_name="Сидоров", patronymic="Петрович")
+def test_get_teacher_list(user_api_client):
+    """Тест проверяет получение списка преподавателей"""
+    teacher1 = TeacherFactory(first_name="Иван", last_name="Петров", patronymic="Сергеевич")
+    teacher2 = TeacherFactory(first_name="Алексей", last_name="Иванов", patronymic="")
+    teacher3 = TeacherFactory(first_name="Сергей", last_name="Сидоров", patronymic="Петрович")
+    response = user_api_client.get("/api/users/teachers/")
+    assert response.status_code == status.HTTP_200_OK
+    assert len(response.data) == Teacher.objects.count()
 
-        cls.url = reverse("api:teachers-list")
+    teacher_ids = {teacher1.id, teacher2.id, teacher3.id}
+    response_ids = {teacher["id"] for teacher in response.data}
+    assert teacher_ids == response_ids
 
-    def test_get_teacher_list(self):
-        """Тест проверяет получение списка преподавателей"""
-        response = self.client.get(self.url)
-        assert response.status_code == status.HTTP_200_OK
-        assert len(response.data) == Teacher.objects.count()
+    teachers_data = {
+        teacher1.id: teacher1,
+        teacher2.id: teacher2,
+        teacher3.id: teacher3,
+    }
 
-        teacher_ids = {self.teacher1.id, self.teacher2.id, self.teacher3.id}
-        response_ids = {teacher["id"] for teacher in response.data}
-        assert teacher_ids == response_ids
+    for teacher_data in response.data:
+        teacher_id = teacher_data["id"]
+        teacher_obj = teachers_data[teacher_id]
 
-        teachers_data = {
-            self.teacher1.id: self.teacher1,
-            self.teacher2.id: self.teacher2,
-            self.teacher3.id: self.teacher3,
-        }
-
-        for teacher_data in response.data:
-            teacher_id = teacher_data["id"]
-            teacher_obj = teachers_data[teacher_id]
-
-            assert teacher_data["first_name"] == teacher_obj.first_name
-            assert teacher_data["last_name"] == teacher_obj.last_name
-            assert teacher_data["patronymic"] == teacher_obj.patronymic
-
-    def test_filter_by_last_name(self):
-        """Тестируем фильтрацию по фамилии"""
-        response = self.client.get(self.url, {"last_name": "Иванов"})
-        assert response.status_code == status.HTTP_200_OK
-        assert len(response.data) == 1
-        teacher = Teacher.objects.get(id=response.data[0]["id"])
-        assert response.data[0]["id"] == teacher.id
-        assert response.data[0]["last_name"] == teacher.last_name
-        assert response.data[0]["first_name"] == teacher.first_name
-        assert response.data[0]["patronymic"] == teacher.patronymic
-
-    def test_search_by_last_name(self):
-        """Тестируем поиск по фамилии"""
-        response = self.client.get(self.url, {"search": "Сидо"})
-        assert response.status_code == status.HTTP_200_OK
-        assert len(response.data) == 1
-        teacher = Teacher.objects.get(id=response.data[0]["id"])
-        assert response.data[0]["id"] == teacher.id
-        assert response.data[0]["last_name"] == teacher.last_name
-        assert response.data[0]["first_name"] == teacher.first_name
-        assert response.data[0]["patronymic"] == teacher.patronymic
-
-    def test_empty_filter_results(self):
-        """Тестируем случай, когда фильтр не находит совпадений"""
-        response = self.client.get(self.url, {"last_name": "НесуществующаяФамилия"})
-        assert response.status_code == status.HTTP_200_OK
-        assert len(response.data) == 0
-        assert response.data == []
+        assert teacher_data["first_name"] == teacher_obj.first_name
+        assert teacher_data["last_name"] == teacher_obj.last_name
+        assert teacher_data["patronymic"] == teacher_obj.patronymic

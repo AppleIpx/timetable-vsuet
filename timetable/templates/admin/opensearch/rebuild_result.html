@@ -1,0 +1,10 @@
+<!-- templates/admin/rebuild_result.html -->
+{% extends "admin/base_site.html" %}
+
+{% block content %}
+  <h1>Результат выполнения</h1>
+  <div class="success">
+    <pre>{{ message }}</pre>
+  </div>
+  <a href="{% url 'api:rebuild-opensearch' %}" class="button">Назад</a>
+{% endblock content %}
