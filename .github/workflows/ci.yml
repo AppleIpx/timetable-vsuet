@@ -50,6 +50,9 @@ jobs:
       - name: Build the Stack
         run: docker compose -f docker-compose.local.yml build django
 
+      - name: Build the docs
+        run: docker compose -f docker-compose.docs.yml build docs
+
       - name: Check DB Migrations
         run: docker compose -f docker-compose.local.yml run --rm django python manage.py makemigrations --check
 
@@ -69,4 +72,4 @@ jobs:
         run: docker ps -aq | xargs -r docker rm
 
       - name: Delete docker image
-        run: docker image rm -f timetable_test_django
+        run: docker image rm -f timetable_local_django
