@@ -1,0 +1,20 @@
+<!-- templates/admin/rebuild_opensearch.html -->
+{% extends "admin/base_site.html" %}
+
+{% block content %}
+  <h1>Пересборка индексов и документов OpenSearch</h1>
+  <form method="post">
+    {% csrf_token %}
+    <table>
+      {% for index in indexes %}
+        <tr>
+          <td>{{ index }}</td>
+          <td>
+            <button type="submit" name="index" value="{{ index }}" class="button">Обновить индекс</button>
+            <button type="submit" name="document" value="{{ index }}" class="button">Обновить документы</button>
+          </td>
+        </tr>
+      {% endfor %}
+    </table>
+  </form>
+{% endblock content %}

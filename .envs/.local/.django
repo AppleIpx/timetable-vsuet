@@ -17,3 +17,8 @@ CELERY_FLOWER_PASSWORD=debug
 # Timetable
 # ------------------------------------------------------------------------------
 TIMETABLE_URL=https://timetable.vsuet.ru/index.php
+
+# OPENSEARCH
+# ------------------------------------------------------------------------------
+USE_OPENSEARCH=True
+OPENSEARCH_URL=http://opensearch:9200
