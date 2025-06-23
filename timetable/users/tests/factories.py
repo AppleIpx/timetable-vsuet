@@ -50,7 +50,7 @@ class UserFactory(DjangoModelFactory[User]):
 class TeacherFactory(DjangoModelFactory):
     first_name = Faker("first_name")
     last_name = Faker("last_name")
-    patronymic = Faker("patronymic")
+    patronymic = Faker("middle_name", locale="ru_RU")
 
     class Meta:
         model = Teacher
