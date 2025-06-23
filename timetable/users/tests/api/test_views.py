@@ -18,8 +18,6 @@ from timetable.users.models import User
 from timetable.users.tests.factories import TeacherFactory
 from timetable.users.tests.factories import UserFactory
 
-pytestmark = pytest.mark.django_db
-
 
 class TestUserViewSet:
     @pytest.fixture
