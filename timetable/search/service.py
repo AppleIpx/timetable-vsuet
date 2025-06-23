@@ -2,7 +2,7 @@ import subprocess
 from enum import StrEnum
 from typing import Final
 
-ALLOWED_INDEXES: Final = frozenset(["teachers"])
+ALLOWED_INDEXES: Final = frozenset(["teachers", "subjects"])
 
 
 class CommandType(StrEnum):
