@@ -8,6 +8,6 @@ class TimeSubjectFactory(DjangoModelFactory):
     class Meta:
         model = TimeSubject
 
-    number = factory.Sequence(lambda n: n + 1)
+    number = factory.Sequence(lambda n: n + 10)
     start_time = factory.Faker("time_object")
     end_time = factory.Faker("time_object")
