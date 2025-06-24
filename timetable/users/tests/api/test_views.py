@@ -1,5 +1,6 @@
 from http import HTTPStatus
 
+import pytest
 from django.conf import settings
 from django.contrib.auth.models import AnonymousUser
 from django.http import HttpResponseRedirect
@@ -33,6 +34,7 @@ class TestUserDetailView:
         assert response.url == f"{login_url}?next=/fake-url/"
 
 
+@pytest.mark.django_db
 def test_get_teacher_list(user_api_client):
     """Тест проверяет получение списка преподавателей"""
     teacher1 = TeacherFactory(first_name="Иван", last_name="Петров", patronymic="Сергеевич")
@@ -61,6 +63,7 @@ def test_get_teacher_list(user_api_client):
         assert teacher_data["patronymic"] == teacher_obj.patronymic
 
 
+@pytest.mark.django_db
 def test_get_teacher_detail(user_api_client, teacher, subject):
     subject.teacher = teacher
     subject.save()
