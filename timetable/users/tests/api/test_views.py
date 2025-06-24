@@ -67,30 +67,44 @@ def test_get_teacher_list(user_api_client):
 def test_get_teacher_detail(user_api_client, teacher, subject):
     subject.teacher = teacher
     subject.save()
+
     response = user_api_client.get(f"/api/users/teachers/{teacher.id}/")
     response_data = response.json()
 
-    assert status.HTTP_200_OK == status.HTTP_200_OK
+    expected_subjects = [
+        {
+            "id": sub.id,
+            "name": sub.name,
+            "audience": {
+                "id": sub.audience.id,
+                "name": sub.audience.name,
+            },
+            "type_of_day": sub.type_of_day,
+            "type_of_week": sub.type_of_week,
+            "type_of_classes": sub.type_of_classes,
+            "time_subject": {
+                "number": sub.time_subject.number,
+                "start_time": str(sub.time_subject.start_time),
+                "end_time": str(sub.time_subject.end_time),
+            },
+            "teacher": {
+                "id": teacher.id,
+                "first_name": teacher.first_name,
+                "last_name": teacher.last_name,
+                "patronymic": teacher.patronymic,
+            },
+            "group": {
+                "id": sub.group.id,
+                "name": sub.group.name,
+            },
+            "subgroup": sub.subgroup,
+        }
+        for sub in teacher.subjects.all()
+    ]
+
+    assert response.status_code == status.HTTP_200_OK
     assert response_data["id"] == teacher.id
     assert response_data["first_name"] == teacher.first_name
     assert response_data["last_name"] == teacher.last_name
     assert response_data["patronymic"] == teacher.patronymic
-    assert response_data["subjects"][0]["id"] == subject.id
-    assert response_data["subjects"][0]["name"] == subject.name
-    assert response_data["subjects"][0]["audience"] == {"id": subject.audience.id, "name": subject.audience.name}
-    assert response_data["subjects"][0]["type_of_day"] == subject.type_of_day
-    assert response_data["subjects"][0]["type_of_week"] == subject.type_of_week
-    assert response_data["subjects"][0]["type_of_classes"] == subject.type_of_classes
-    assert response_data["subjects"][0]["time_subject"] == {
-        "number": subject.time_subject.number,
-        "start_time": str(subject.time_subject.start_time),
-        "end_time": str(subject.time_subject.end_time),
-    }
-    assert response_data["subjects"][0]["teacher"] == {
-        "id": teacher.id,
-        "first_name": teacher.first_name,
-        "last_name": teacher.last_name,
-        "patronymic": teacher.patronymic,
-    }
-    assert response_data["subjects"][0]["group"] == {"id": subject.group.id, "name": subject.group.name}
-    assert response_data["subjects"][0]["subgroup"] == subject.subgroup
+    assert response_data["subjects"] == expected_subjects

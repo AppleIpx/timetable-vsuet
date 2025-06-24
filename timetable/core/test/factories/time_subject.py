@@ -1,5 +1,3 @@
-import secrets
-
 import factory
 from factory.django import DjangoModelFactory
 
@@ -10,6 +8,6 @@ class TimeSubjectFactory(DjangoModelFactory):
     class Meta:
         model = TimeSubject
 
-    number = factory.LazyFunction(lambda: secrets.randbelow(100) + 1)
+    number = factory.Sequence(lambda n: n + 10)
     start_time = factory.Faker("time_object")
     end_time = factory.Faker("time_object")
