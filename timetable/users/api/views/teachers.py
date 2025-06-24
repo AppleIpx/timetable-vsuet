@@ -1,10 +1,17 @@
-from rest_framework import mixins
-from rest_framework import viewsets
+from rest_framework.viewsets import ReadOnlyModelViewSet
 
-from timetable.users.api.serializers import TeacherSerializer
+from timetable.users.api.serializers import TeacherDetailSerializer
+from timetable.users.api.serializers import TeacherListSerializer
 from timetable.users.models import Teacher
 
 
-class TeacherView(mixins.ListModelMixin, viewsets.GenericViewSet):
-    queryset = Teacher.objects.all()
-    serializer_class = TeacherSerializer
+class TeacherView(ReadOnlyModelViewSet):
+    def get_queryset(self):
+        return Teacher.objects.prefetch_related("subjects")
+
+    def get_serializer_class(self):
+        if self.action == "list":
+            return TeacherListSerializer
+        if self.action == "retrieve":
+            return TeacherDetailSerializer
+        return super().get_serializer_class()

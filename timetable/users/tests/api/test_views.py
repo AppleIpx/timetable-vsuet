@@ -3,57 +3,16 @@ from http import HTTPStatus
 import pytest
 from django.conf import settings
 from django.contrib.auth.models import AnonymousUser
-from django.http import HttpRequest
 from django.http import HttpResponseRedirect
 from django.test import RequestFactory
 from django.urls import reverse
-from rest_framework.test import APIRequestFactory
 from starlette import status
 
-from timetable.users.api.views.user import UserUpdateView
-from timetable.users.api.views.user import UserViewSet
 from timetable.users.api.views.user import user_detail_view
 from timetable.users.models import Teacher
 from timetable.users.models import User
 from timetable.users.tests.factories import TeacherFactory
 from timetable.users.tests.factories import UserFactory
-
-
-class TestUserViewSet:
-    @pytest.fixture
-    def api_rf(self) -> APIRequestFactory:
-        return APIRequestFactory()
-
-    def test_get_queryset(self, user: User, api_rf: APIRequestFactory):
-        view = UserViewSet()
-        request = api_rf.get("/fake-url/")
-        request.user = user
-
-        view.request = request
-
-        assert user in view.get_queryset()
-
-
-class TestUserUpdateView:
-    """
-    TODO:
-        extracting view initialization code as class-scoped fixture
-        would be great if only pytest-django supported non-function-scoped
-        fixture db access -- this is a work-in-progress for now:
-        https://github.com/pytest-dev/pytest-django/pull/258
-    """
-
-    def dummy_get_response(self, request: HttpRequest):
-        return None
-
-    def test_get_object(self, user: User, rf: RequestFactory):
-        view = UserUpdateView()
-        request = rf.get("/fake-url/")
-        request.user = user
-
-        view.request = request
-
-        assert view.get_object() == user
 
 
 class TestUserDetailView:
@@ -75,6 +34,7 @@ class TestUserDetailView:
         assert response.url == f"{login_url}?next=/fake-url/"
 
 
+@pytest.mark.django_db
 def test_get_teacher_list(user_api_client):
     """Тест проверяет получение списка преподавателей"""
     teacher1 = TeacherFactory(first_name="Иван", last_name="Петров", patronymic="Сергеевич")
@@ -101,3 +61,36 @@ def test_get_teacher_list(user_api_client):
         assert teacher_data["first_name"] == teacher_obj.first_name
         assert teacher_data["last_name"] == teacher_obj.last_name
         assert teacher_data["patronymic"] == teacher_obj.patronymic
+
+
+@pytest.mark.django_db
+def test_get_teacher_detail(user_api_client, teacher, subject):
+    subject.teacher = teacher
+    subject.save()
+    response = user_api_client.get(f"/api/users/teachers/{teacher.id}/")
+    response_data = response.json()
+
+    assert status.HTTP_200_OK == status.HTTP_200_OK
+    assert response_data["id"] == teacher.id
+    assert response_data["first_name"] == teacher.first_name
+    assert response_data["last_name"] == teacher.last_name
+    assert response_data["patronymic"] == teacher.patronymic
+    assert response_data["subjects"][0]["id"] == subject.id
+    assert response_data["subjects"][0]["name"] == subject.name
+    assert response_data["subjects"][0]["audience"] == {"id": subject.audience.id, "name": subject.audience.name}
+    assert response_data["subjects"][0]["type_of_day"] == subject.type_of_day
+    assert response_data["subjects"][0]["type_of_week"] == subject.type_of_week
+    assert response_data["subjects"][0]["type_of_classes"] == subject.type_of_classes
+    assert response_data["subjects"][0]["time_subject"] == {
+        "number": subject.time_subject.number,
+        "start_time": str(subject.time_subject.start_time),
+        "end_time": str(subject.time_subject.end_time),
+    }
+    assert response_data["subjects"][0]["teacher"] == {
+        "id": teacher.id,
+        "first_name": teacher.first_name,
+        "last_name": teacher.last_name,
+        "patronymic": teacher.patronymic,
+    }
+    assert response_data["subjects"][0]["group"] == {"id": subject.group.id, "name": subject.group.name}
+    assert response_data["subjects"][0]["subgroup"] == subject.subgroup
