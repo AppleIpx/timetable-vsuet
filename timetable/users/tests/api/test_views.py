@@ -1,17 +1,12 @@
 from http import HTTPStatus
 
-import pytest
 from django.conf import settings
 from django.contrib.auth.models import AnonymousUser
-from django.http import HttpRequest
 from django.http import HttpResponseRedirect
 from django.test import RequestFactory
 from django.urls import reverse
-from rest_framework.test import APIRequestFactory
 from starlette import status
 
-from timetable.users.api.views.user import UserUpdateView
-from timetable.users.api.views.user import UserViewSet
 from timetable.users.api.views.user import user_detail_view
 from timetable.users.models import Teacher
 from timetable.users.models import User
