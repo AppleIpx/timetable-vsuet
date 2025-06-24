@@ -8,8 +8,8 @@ SATURDAY = "Суббота"
 SUNDAY = "Воскресенье"
 
 # Тип недели
-NUMERATOR = "числитель"
-DENOMINATOR = "знаменатель"
+NUMERATOR = "Числитель"
+DENOMINATOR = "Знаменатель"
 
 # Тип занятия
 LECTURE = "Лекция"
