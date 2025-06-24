@@ -8,9 +8,6 @@ from django.views.generic import RedirectView
 from django.views.generic import UpdateView
 from rest_framework import status
 from rest_framework.decorators import action
-from rest_framework.mixins import ListModelMixin
-from rest_framework.mixins import RetrieveModelMixin
-from rest_framework.mixins import UpdateModelMixin
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 
@@ -18,10 +15,9 @@ from timetable.users.api.serializers import UserSerializer
 from timetable.users.models import User
 
 
-class UserViewSet(RetrieveModelMixin, ListModelMixin, UpdateModelMixin, GenericViewSet):
+class UserViewSet(GenericViewSet):
     serializer_class = UserSerializer
     queryset = User.objects.all()
-    lookup_field = "username"
 
     def get_queryset(self, *args, **kwargs):
         assert isinstance(self.request.user.id, int)

@@ -1,7 +1,7 @@
 from rest_framework import serializers
 
+from timetable.core.models import Audience
 from timetable.core.models import Subject
-from timetable.core.serializers.audience_serializer import AudienceSerializer
 from timetable.core.serializers.group_serializer import GroupSerializer
 from timetable.core.serializers.time_subject_serializer import TimeSubjectSerializer
 from timetable.users.models import Teacher
@@ -11,6 +11,12 @@ class TeacherSubjectSerializer(serializers.ModelSerializer):
     class Meta:
         model = Teacher
         fields = ("id", "first_name", "last_name", "patronymic")
+
+
+class AudienceSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Audience
+        fields = ("id", "name")
 
 
 class SubjectSerializer(serializers.ModelSerializer):
