@@ -23,7 +23,6 @@ def update_timetable_view(request):
             messages.error(request, "Недопустимый тип обновления.")
             return redirect(request.path)
 
-        # Находим соответствующий индекс и файл
         file_field = None
         for key, value in request.POST.items():
             if key.startswith("index_type_") and value == update_type:

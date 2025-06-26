@@ -1,8 +1,8 @@
 from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers
 
+from timetable.core.api.serializers.list_subject_serializer import SubjectSerializer
 from timetable.core.models import Audience
-from timetable.core.serializers.list_subject_serializer import SubjectSerializer
 
 
 class AudienceWithSubjectsSerializer(serializers.ModelSerializer):

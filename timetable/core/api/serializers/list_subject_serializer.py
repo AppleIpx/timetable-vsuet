@@ -1,9 +1,9 @@
 from rest_framework import serializers
 
+from timetable.core.api.serializers.group_serializer import GroupSerializer
+from timetable.core.api.serializers.time_subject_serializer import TimeSubjectSerializer
 from timetable.core.models import Audience
 from timetable.core.models import Subject
-from timetable.core.serializers.group_serializer import GroupSerializer
-from timetable.core.serializers.time_subject_serializer import TimeSubjectSerializer
 from timetable.users.models import Teacher
 
 
@@ -31,6 +31,7 @@ class SubjectSerializer(serializers.ModelSerializer):
             "id",
             "name",
             "audience",
+            "date",
             "type_of_day",
             "type_of_week",
             "type_of_classes",

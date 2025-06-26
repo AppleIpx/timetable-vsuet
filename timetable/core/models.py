@@ -1,3 +1,5 @@
+import datetime
+
 from django.db import models
 
 from timetable.core.enums import TYPE_OF_CLASSES_CHOICES
@@ -63,6 +65,7 @@ class Subject(BaseModel):
         on_delete=models.SET_NULL,
         verbose_name="Аудитория",
     )
+    date = models.DateField(verbose_name="Дата проведения занятия", default=datetime.date.today)
     type_of_day = models.CharField(
         max_length=20,
         verbose_name="День недели",
@@ -109,3 +112,21 @@ class Subject(BaseModel):
 
     def __str__(self):
         return self.name
+
+
+class ScheduleAnchor(models.Model):
+    start_date = models.DateField("Дата начала учебного семестра", default=datetime.date.today)
+    end_date = models.DateField("Дата окончания учебного семестра", default=datetime.date.today)
+    week_type = models.CharField(
+        max_length=20,
+        choices=TYPE_OF_WEEK_CHOICES,
+        verbose_name="Тип недели (Ч/З)",
+    )
+
+    class Meta:
+        verbose_name = "опорная дата расписания"
+        verbose_name_plural = "опорная дата расписания"
+
+    def __str__(self):
+        weekday = self.start_date.strftime("%A")
+        return f"{self.start_date} ({weekday}) — {self.week_type}"

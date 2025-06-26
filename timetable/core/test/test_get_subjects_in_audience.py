@@ -15,6 +15,7 @@ def test_get_subjects_in_audience(user_api_client, audience):
         {
             "id": subject.id,
             "name": subject.name,
+            "date": str(subject.date),
             "audience": {
                 "id": audience.id,
                 "name": audience.name,
