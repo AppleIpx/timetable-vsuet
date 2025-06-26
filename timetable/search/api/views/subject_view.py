@@ -2,8 +2,8 @@ from drf_spectacular.utils import extend_schema
 from drf_spectacular.utils import extend_schema_view
 from rest_framework.generics import ListAPIView
 
+from timetable.core.api.serializers.list_subject_serializer import SubjectSerializer
 from timetable.core.models import Subject
-from timetable.core.serializers.list_subject_serializer import SubjectSerializer
 from timetable.search.api.serializers.request_serializer import RequestSearchSerializer
 from timetable.search.api.utils.django_filter import django_filter_warning
 from timetable.search.query_generators.subject_search_query_generator import SubjectSearchQueryGenerator

@@ -27,10 +27,17 @@ class User(AbstractUser):
         return reverse("users:detail", kwargs={"username": self.username})
 
 
-class Teacher(models.Model):
+class Person(models.Model):
     first_name = models.CharField(max_length=100, verbose_name="Имя")
     last_name = models.CharField(max_length=100, verbose_name="Фамилия")
     patronymic = models.CharField(max_length=100, verbose_name="Отчество", blank=True)
+
+    class Meta:
+        abstract = True
+
+
+class Teacher(Person):
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="teacher")
 
     class Meta:
         verbose_name = "преподаватель"
@@ -38,3 +45,18 @@ class Teacher(models.Model):
 
     def __str__(self):
         return f"{self.last_name} {self.first_name} {self.patronymic}"
+
+
+class Student(Person):
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="student")
+    group = models.ForeignKey("core.Group", verbose_name="Группа", on_delete=models.CASCADE)
+    gradebook = models.IntegerField(verbose_name="Номер зачетной книжки")
+    faculty = models.ForeignKey("core.Faculty", verbose_name="Факультет", on_delete=models.CASCADE)
+    subgroup = models.PositiveSmallIntegerField(verbose_name="Подгруппа")
+
+    class Meta:
+        verbose_name = "студент"
+        verbose_name_plural = "студенты"
+
+    def __str__(self):
+        return f"{self.last_name} {self.first_name[0]}.{self.patronymic[0]} группы {self.group}"

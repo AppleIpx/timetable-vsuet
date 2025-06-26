@@ -1,8 +1,8 @@
 from rest_framework import mixins
 from rest_framework import viewsets
 
+from timetable.core.api.serializers.list_subject_serializer import SubjectSerializer
 from timetable.core.models import Subject
-from timetable.core.serializers.list_subject_serializer import SubjectSerializer
 
 
 class TimetableViewSet(
@@ -16,4 +16,5 @@ class TimetableViewSet(
         "group__name": ["exact"],
         "type_of_day": ["exact"],
         "subgroup": ["exact"],
+        "date": ["exact"],
     }
