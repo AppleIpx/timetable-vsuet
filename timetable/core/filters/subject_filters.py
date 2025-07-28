@@ -3,6 +3,7 @@ from datetime import UTC
 from django.db.models import Q
 from django_filters import rest_framework as filters
 
+from timetable.core.enums import FILTER_TYPE_OF_WEEK_CHOICES
 from timetable.core.models import Subject
 
 
@@ -10,7 +11,7 @@ class SubjectFilter(filters.FilterSet):
     date_min = filters.DateTimeFilter(method="filter_by_date_min", label="Дата начала или повторения после")
     date_max = filters.DateTimeFilter(method="filter_by_date_max", label="Дата начала или повторения до")
 
-    type_of_week = filters.ChoiceFilter(choices=Subject._meta.get_field("type_of_week").choices)  # noqa: SLF001
+    type_of_week = filters.ChoiceFilter(choices=FILTER_TYPE_OF_WEEK_CHOICES)
     group__name = filters.CharFilter(field_name="group__name", lookup_expr="exact")
     subgroup = filters.NumberFilter(field_name="subgroup", lookup_expr="exact")
 

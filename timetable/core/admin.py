@@ -24,7 +24,7 @@ class SubjectRepeatInline(admin.TabularInline):
 class SubjectAdmin(admin.ModelAdmin):
     search_fields = ("name",)
     list_filter = ("type_of_week",)
-    list_display = ("name", "group__name", "audience__name", "type_of_week")
+    list_display = ("name", "group__name", "audience__name", "teacher__first_name", "type_of_week")
     ordering = ["name"]
     inlines = (SubjectRepeatInline,)
 

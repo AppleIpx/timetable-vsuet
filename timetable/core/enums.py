@@ -37,6 +37,11 @@ TYPE_OF_WEEK_CHOICES = [
     (AUTO, "Автоматически"),
 ]
 
+FILTER_TYPE_OF_WEEK_CHOICES = [
+    ("NUM", "Числитель"),
+    ("DEN", "Знаменатель"),
+]
+
 TYPE_OF_CLASSES_CHOICES = [
     (LECTURE, "Лекция"),
     (PRACTICE, "Практическое занятие"),
