@@ -10,11 +10,17 @@ SUNDAY = "Воскресенье"
 # Тип недели
 NUMERATOR = "Числитель"
 DENOMINATOR = "Знаменатель"
+AUTO = "Автоматически"
 
 # Тип занятия
 LECTURE = "Лекция"
 PRACTICE = "Практическое занятие"
 LABORATORY = "Лабораторное занятие"
+
+# Тип повторения
+WITHOUT_REPETITION = "Без повторения"
+EveryWeek = "Каждую неделю"
+EveryTwoWeeks = "Каждые 2 недели"
 
 TYPE_OF_DAY_CHOICES = [
     (MONDAY, "Понедельник"),
@@ -28,10 +34,17 @@ TYPE_OF_DAY_CHOICES = [
 TYPE_OF_WEEK_CHOICES = [
     (NUMERATOR, "Числитель"),
     (DENOMINATOR, "Знаменатель"),
+    (AUTO, "Автоматически"),
 ]
 
 TYPE_OF_CLASSES_CHOICES = [
     (LECTURE, "Лекция"),
     (PRACTICE, "Практическое занятие"),
     (LABORATORY, "Лабораторное занятие"),
+]
+
+RULE_OF_REPEATS = [
+    (WITHOUT_REPETITION, "Без повторения"),
+    (EveryWeek, "Каждую неделю"),
+    (EveryTwoWeeks, "Каждые 2 недели"),
 ]

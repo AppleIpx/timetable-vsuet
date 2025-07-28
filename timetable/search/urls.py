@@ -1,5 +1,6 @@
 from django.conf import settings
 from django.contrib import admin
+from django.urls import include
 from django.urls import path
 from rest_framework.routers import DefaultRouter
 from rest_framework.routers import SimpleRouter
@@ -18,4 +19,5 @@ urlpatterns = [
         admin.site.admin_view(rebuild_opensearch_view),
         name="rebuild-opensearch",
     ),
+    path("", include(router.urls)),
 ]

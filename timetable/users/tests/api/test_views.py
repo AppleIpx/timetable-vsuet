@@ -1,6 +1,7 @@
 import pytest
 from starlette import status
 
+from timetable.core.enums import EveryWeek
 from timetable.users.models import Teacher
 from timetable.users.tests.factories import TeacherFactory
 
@@ -37,6 +38,7 @@ def test_get_teacher_list(user_api_client):
 @pytest.mark.django_db
 def test_get_teacher_detail(user_api_client, teacher, subject):
     subject.teacher = teacher
+    subject.rule_of_repeat = EveryWeek
     subject.save()
 
     response = user_api_client.get(f"/api/users/teachers/{teacher.id}/")
@@ -51,7 +53,6 @@ def test_get_teacher_detail(user_api_client, teacher, subject):
                 "id": sub.audience.id,
                 "name": sub.audience.name,
             },
-            "type_of_day": sub.type_of_day,
             "type_of_week": sub.type_of_week,
             "type_of_classes": sub.type_of_classes,
             "time_subject": {
@@ -70,6 +71,13 @@ def test_get_teacher_detail(user_api_client, teacher, subject):
                 "name": sub.group.name,
             },
             "subgroup": sub.subgroup,
+            "repeat_dates": [
+                {
+                    "id": rd.id,
+                    "date": str(rd.date),
+                }
+                for rd in subject.repeat_dates.all()
+            ],
         }
         for sub in teacher.subjects.all()
     ]
