@@ -23,4 +23,8 @@ class SubjectSearchView(ListAPIView):
         search_result = query_generator_service(**serializer.validated_data).execute()
 
         subject_ids = [hit.meta.id for hit in search_result]
-        return Subject.objects.filter(id__in=subject_ids)
+        return (
+            Subject.objects.filter(id__in=subject_ids)
+            .select_related("teacher", "group", "audience", "time_subject")
+            .prefetch_related("repeat_dates")
+        )

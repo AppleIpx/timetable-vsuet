@@ -1,7 +1,6 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 from django.db.models import CharField
-from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
 
 
@@ -17,27 +16,19 @@ class User(AbstractUser):
     first_name = None  # type: ignore[assignment]
     last_name = None  # type: ignore[assignment]
 
-    def get_absolute_url(self) -> str:
-        """Get URL for user's detail view.
-
-        Returns:
-            str: URL for user detail.
-
-        """
-        return reverse("users:detail", kwargs={"username": self.username})
-
 
 class Person(models.Model):
     first_name = models.CharField(max_length=100, verbose_name="Имя")
     last_name = models.CharField(max_length=100, verbose_name="Фамилия")
     patronymic = models.CharField(max_length=100, verbose_name="Отчество", blank=True)
+    password = models.CharField(max_length=50, verbose_name="Базовый пароль", blank=True)
 
     class Meta:
         abstract = True
 
 
 class Teacher(Person):
-    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="teacher")
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="teacher", null=True, blank=True)
 
     class Meta:
         verbose_name = "преподаватель"
@@ -46,9 +37,14 @@ class Teacher(Person):
     def __str__(self):
         return f"{self.last_name} {self.first_name} {self.patronymic}"
 
+    def delete(self, *args, **kwargs):
+        if self.user:
+            self.user.delete()
+        super().delete(*args, **kwargs)
+
 
 class Student(Person):
-    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="student")
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="student", null=True, blank=True)
     group = models.ForeignKey("core.Group", verbose_name="Группа", on_delete=models.CASCADE)
     gradebook = models.IntegerField(verbose_name="Номер зачетной книжки")
     faculty = models.ForeignKey("core.Faculty", verbose_name="Факультет", on_delete=models.CASCADE)

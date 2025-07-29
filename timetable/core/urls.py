@@ -12,7 +12,7 @@ from timetable.core.api.views.list_timetable import TimetableViewSet
 from timetable.core.api.views.update_timetable_data import update_timetable_view
 
 router = DefaultRouter() if settings.DEBUG else SimpleRouter()
-router.register("", TimetableViewSet)
+router.register("", TimetableViewSet, basename="timetable")
 router.register("audience", AudienceViewSet)
 
 

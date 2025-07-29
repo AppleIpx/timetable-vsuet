@@ -1,13 +1,11 @@
 import pytest
 from rest_framework import status
 
-from timetable.core.test.factories.subject import SubjectFactory
-
 
 @pytest.mark.django_db
-def test_get_subjects_in_audience(user_api_client, audience):
-    subjects = SubjectFactory.create_batch(3, audience=audience)
-
+def test_get_subjects_in_audience(user_api_client, subject_with_everyweek_repeat):
+    """Тест проверяет, что по конкретной аудитории можно получить список предметов, которые будут в ней проводиться"""
+    audience = subject_with_everyweek_repeat[0].audience
     response = user_api_client.get(f"/api/timetable/audience/{audience.id}/")
     response_data = response.json()
 
@@ -17,10 +15,9 @@ def test_get_subjects_in_audience(user_api_client, audience):
             "name": subject.name,
             "date": str(subject.date),
             "audience": {
-                "id": audience.id,
-                "name": audience.name,
+                "id": subject.audience.id,
+                "name": subject.audience.name,
             },
-            "type_of_day": subject.type_of_day,
             "type_of_week": subject.type_of_week,
             "type_of_classes": subject.type_of_classes,
             "time_subject": {
@@ -39,8 +36,15 @@ def test_get_subjects_in_audience(user_api_client, audience):
                 "name": subject.group.name,
             },
             "subgroup": subject.subgroup,
+            "repeat_dates": [
+                {
+                    "id": rd.id,
+                    "date": str(rd.date),
+                }
+                for rd in subject.repeat_dates.all()
+            ],
         }
-        for subject in subjects
+        for subject in subject_with_everyweek_repeat
     ]
 
     assert response.status_code == status.HTTP_200_OK
