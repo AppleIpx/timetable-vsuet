@@ -69,6 +69,7 @@ DJANGO_APPS = [
     # "django.contrib.humanize", # Handy template tags
     "django.contrib.admin",
     "django.forms",
+    "django_filters",
 ]
 THIRD_PARTY_APPS = [
     "crispy_forms",
@@ -77,7 +78,7 @@ THIRD_PARTY_APPS = [
     "allauth.account",
     "django_celery_beat",
     "rest_framework",
-    "rest_framework.authtoken",
+    "rest_framework_simplejwt",
     "corsheaders",
     "drf_spectacular",
 ]
@@ -85,6 +86,7 @@ THIRD_PARTY_APPS = [
 LOCAL_APPS = [
     "timetable.users",
     "timetable.core",
+    "timetable.search",
     # Your stuff: custom apps go here
 ]
 # https://docs.djangoproject.com/en/dev/ref/settings/#installed-apps
@@ -328,10 +330,9 @@ SOCIALACCOUNT_FORMS = {"signup": "timetable.users.forms.UserSocialSignupForm"}
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (
         "rest_framework.authentication.SessionAuthentication",
-        "rest_framework.authentication.TokenAuthentication",
+        "rest_framework_simplejwt.authentication.JWTAuthentication",
     ),
-    # "DEFAULT_PERMISSION_CLASSES": ("rest_framework.permissions.IsAuthenticated",),
-    "DEFAULT_PERMISSION_CLASSES": ("rest_framework.permissions.AllowAny",),
+    "DEFAULT_PERMISSION_CLASSES": ("rest_framework.permissions.IsAuthenticated",),
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
     "DEFAULT_FILTER_BACKENDS": ["django_filters.rest_framework.DjangoFilterBackend"],
 }
@@ -348,5 +349,25 @@ SPECTACULAR_SETTINGS = {
     "SERVE_PERMISSIONS": ["rest_framework.permissions.IsAdminUser"],
     "SCHEMA_PATH_PREFIX": "/api/",
 }
-# Your stuff...
+
+# Opensearch
 # ------------------------------------------------------------------------------
+USE_OPENSEARCH = env.bool("USE_OPENSEARCH", False)
+if USE_OPENSEARCH:
+    OPENSEARCH_DSL = {
+        "default": {
+            "hosts": env("OPENSEARCH_URL"),
+        },
+    }
+    OPENSEARCH_PASSWORD = env("OPENSEARCH_PASSWORD", default="")
+    if OPENSEARCH_PASSWORD:
+        OPENSEARCH_DSL["default"].update(
+            {
+                "http_auth": (env("OPENSEARCH_USER"), OPENSEARCH_PASSWORD),
+                "use_ssl": True,
+                "verify_certs": True,
+                "ca_certs": env("SSL_CA_CERTS"),
+            },
+        )
+    INSTALLED_APPS += ["django_opensearch_dsl"]
+    OPENSEARCH_DSL_AUTO_REFRESH = True

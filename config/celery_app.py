@@ -6,7 +6,12 @@ from celery.signals import setup_logging
 # set the default Django settings module for the 'celery' program.
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "config.settings.local")
 
-app = Celery("timetable")
+app = Celery(
+    "timetable",
+    broker_transport="redis",
+    broker_transport_options={"visibility_timeout": 3600},
+    broker_connection_retry_on_startup=True,
+)
 
 # Using a string here means the worker doesn't have to serialize
 # the configuration object to child processes.

@@ -1,13 +1,26 @@
+import datetime
+
 from django.db import models
 
+from timetable.core.enums import AUTO
+from timetable.core.enums import FILTER_TYPE_OF_WEEK_CHOICES
+from timetable.core.enums import FRIDAY
+from timetable.core.enums import MONDAY
+from timetable.core.enums import RULE_OF_REPEATS
+from timetable.core.enums import SATURDAY
+from timetable.core.enums import SUNDAY
+from timetable.core.enums import THURSDAY
+from timetable.core.enums import TUESDAY
 from timetable.core.enums import TYPE_OF_CLASSES_CHOICES
-from timetable.core.enums import TYPE_OF_DAY_CHOICES
 from timetable.core.enums import TYPE_OF_WEEK_CHOICES
+from timetable.core.enums import WEDNESDAY
+from timetable.core.enums import WITHOUT_REPETITION
+from timetable.core.utils.calculation_of_the_type_of_week import calculating_a_type_of_week
 from timetable.users.models import Teacher
 
 
 class BaseModel(models.Model):
-    name = models.CharField(max_length=100)
+    name = models.CharField(max_length=100, verbose_name="Название")
 
     class Meta:
         abstract = True
@@ -45,51 +58,67 @@ class TimeSubject(models.Model):
         unique=True,
         verbose_name="номер пары по счету",
     )
-    start_time = models.TimeField()
-    end_time = models.TimeField()
+    start_time = models.TimeField(verbose_name="Время начала пары")
+    end_time = models.TimeField(verbose_name="Время окончания пары")
 
     class Meta:
         verbose_name = "время пары"
         verbose_name_plural = "время пар"
 
     def __str__(self):
-        return f"пара {self.number}"
+        return f"пара {self.number} с {self.start_time} - {self.end_time}"
 
 
-class Subject(models.Model):
-    name = models.CharField(max_length=100)
+class Subject(BaseModel):
     audience = models.ForeignKey(
         Audience,
         null=True,
         on_delete=models.SET_NULL,
+        verbose_name="Аудитория",
     )
-    type_of_day = models.CharField(
-        max_length=20,
-        verbose_name="день недели",
-        choices=TYPE_OF_DAY_CHOICES,
-        default="",
+    date = models.DateField(
+        verbose_name="Дата проведения первого занятия",
+        default=datetime.date.today,
     )
     type_of_week = models.CharField(
         max_length=20,
-        verbose_name="тип недели",
+        verbose_name="Тип недели",
         choices=TYPE_OF_WEEK_CHOICES,
         default="",
     )
     type_of_classes = models.CharField(
         max_length=30,
-        verbose_name="тип занятия",
+        verbose_name="Тип занятия",
         choices=TYPE_OF_CLASSES_CHOICES,
         default="",
     )
-    time_subject = models.ForeignKey(TimeSubject, on_delete=models.CASCADE)
+    rule_of_repeat = models.CharField(
+        max_length=30,
+        verbose_name="Правило повторения",
+        choices=RULE_OF_REPEATS,
+        default=WITHOUT_REPETITION,
+    )
+    time_subject = models.ForeignKey(
+        TimeSubject,
+        on_delete=models.CASCADE,
+        verbose_name="Время пары",
+    )
     teacher = models.ForeignKey(
         Teacher,
         on_delete=models.CASCADE,
         null=True,
         blank=True,
+        related_name="subjects",
+        verbose_name="Преподаватель",
     )
-    group = models.ForeignKey(Group, on_delete=models.CASCADE)
-    subgroup = models.PositiveSmallIntegerField()
+    group = models.ForeignKey(
+        Group,
+        on_delete=models.CASCADE,
+        verbose_name="Группа",
+    )
+    subgroup = models.PositiveSmallIntegerField(
+        verbose_name="Подгруппа",
+    )
 
     class Meta:
         verbose_name = "предмет"
@@ -98,43 +127,57 @@ class Subject(models.Model):
     def __str__(self):
         return self.name
 
+    def clean(self):
+        start_date_semester = ScheduleAnchor.objects.first()
+        if self.type_of_week == AUTO:
+            self.type_of_week = calculating_a_type_of_week(
+                target_date=self.date,
+                start_date_semester=start_date_semester,
+            )
 
-class ErrorSubject(models.Model):
-    name = models.CharField(max_length=100, null=True, blank=True)  # noqa: DJ001
-    audience = models.CharField(max_length=100, null=True, blank=True)  # noqa: DJ001
-    type_of_day = models.CharField(  # noqa: DJ001
-        max_length=20,
-        verbose_name="день недели",
-        blank=True,
-        null=True,
-    )
-    type_of_week = models.CharField(  # noqa: DJ001
-        max_length=20,
-        verbose_name="тип недели",
-        blank=True,
-        null=True,
-    )
-    type_of_classes = models.CharField(  # noqa: DJ001
-        max_length=20,
-        verbose_name="тип занятия",
-        blank=True,
-        null=True,
-    )
-    time_subject = models.ForeignKey(
-        TimeSubject,
-        on_delete=models.CASCADE,
-        default=1,
-        blank=True,
-        null=True,
-    )
-    teacher = models.CharField(blank=True, null=True, max_length=100)  # noqa: DJ001
-    group = models.CharField(blank=True, null=True, max_length=100)  # noqa: DJ001
-    subgroup = models.PositiveSmallIntegerField(blank=True, null=True)
-    cause_of_error = models.TextField(null=True, blank=True)  # noqa: DJ001
+
+class SubjectRepeat(models.Model):
+    """Даты повторения предметов."""
+
+    subject = models.ForeignKey(Subject, on_delete=models.CASCADE, related_name="repeat_dates")
+    date = models.DateTimeField("Дата и время начала")
 
     class Meta:
-        verbose_name = "предмет с ошибкой"
-        verbose_name_plural = "предметы с ошибками"
+        verbose_name = "повторяющаяся дата предмета"
+        verbose_name_plural = "повторяющиеся даты предметов"
+        indexes = [
+            models.Index(fields=["date"]),
+        ]
 
     def __str__(self):
-        return self.name
+        return f"Дата повторения: {self.date} для предмета с ID {self.subject}"
+
+
+class ScheduleAnchor(models.Model):
+    start_date = models.DateField("Дата начала учебного семестра", default=datetime.date.today)
+    end_date = models.DateField("Дата окончания учебного семестра", default=datetime.date.today)
+    week_type = models.CharField(
+        max_length=20,
+        choices=FILTER_TYPE_OF_WEEK_CHOICES,
+        verbose_name="Тип недели (Ч/З) в день начала занятий",
+    )
+
+    class Meta:
+        verbose_name = "опорная дата расписания"
+        verbose_name_plural = "опорная дата расписания"
+
+    def __str__(self):
+        # Словарь для перевода дней недели
+        weekdays_translation = {
+            "Monday": MONDAY,
+            "Tuesday": TUESDAY,
+            "Wednesday": WEDNESDAY,
+            "Thursday": THURSDAY,
+            "Friday": FRIDAY,
+            "Saturday": SATURDAY,
+            "Sunday": SUNDAY,
+        }
+
+        weekday_en = self.start_date.strftime("%A")
+        weekday_ru = weekdays_translation.get(weekday_en, weekday_en)
+        return f"{self.start_date} ({weekday_ru}) — {self.week_type}"

@@ -1,8 +1,11 @@
-from celery.app import shared_task
+from celery import shared_task
 
-from timetable.utils.parsing_data import parse_data
+from timetable.core.models import Subject
+from timetable.core.service.subject_repeat_service import SubjectRepeatService
 
 
 @shared_task
-def update_timetable():
-    parse_data()
+def create_subject_repeat_dates_task(subject_id):
+    """Таска для генерации повторяющихся дат."""
+    subject = Subject.objects.get(id=subject_id)
+    SubjectRepeatService(subject=subject)()

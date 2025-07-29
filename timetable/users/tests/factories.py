@@ -1,10 +1,14 @@
 from collections.abc import Sequence
 from typing import Any
 
+import factory
 from factory import Faker
 from factory import post_generation
 from factory.django import DjangoModelFactory
 
+from timetable.core.test.factories.faculty import FacultyFactory
+from timetable.core.test.factories.group import GroupFactory
+from timetable.users.models import Student
 from timetable.users.models import Teacher
 from timetable.users.models import User
 
@@ -47,10 +51,26 @@ class UserFactory(DjangoModelFactory[User]):
         django_get_or_create = ["username"]
 
 
-class TeacherFactory(DjangoModelFactory):
+class PersonFactory(DjangoModelFactory):
+    user = factory.SubFactory(UserFactory)
     first_name = Faker("first_name")
     last_name = Faker("last_name")
-    patronymic = Faker("patronymic")
+    patronymic = Faker("middle_name", locale="ru_RU")
 
     class Meta:
+        abstract = True
+
+
+class TeacherFactory(PersonFactory):
+    class Meta:
         model = Teacher
+
+
+class StudentFactory(PersonFactory):
+    group = factory.SubFactory(GroupFactory)
+    gradebook = factory.Faker("random_int", min=1000, max=9999)
+    faculty = factory.SubFactory(FacultyFactory)
+    subgroup = factory.Faker("random_int", min=1, max=3)
+
+    class Meta:
+        model = Student

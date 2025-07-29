@@ -1,69 +1,53 @@
-from django.contrib.auth.mixins import LoginRequiredMixin
-from django.contrib.messages.views import SuccessMessageMixin
-from django.db.models import QuerySet
-from django.urls import reverse
-from django.utils.translation import gettext_lazy as _
-from django.views.generic import DetailView
-from django.views.generic import RedirectView
-from django.views.generic import UpdateView
-from rest_framework import status
-from rest_framework.decorators import action
-from rest_framework.mixins import ListModelMixin
-from rest_framework.mixins import RetrieveModelMixin
-from rest_framework.mixins import UpdateModelMixin
+from drf_spectacular.utils import OpenApiResponse
+from drf_spectacular.utils import extend_schema
+from drf_spectacular.utils import inline_serializer
 from rest_framework.response import Response
-from rest_framework.viewsets import GenericViewSet
+from rest_framework.views import APIView
+from rest_framework_simplejwt.authentication import JWTAuthentication
 
-from timetable.users.api.serializers import UserSerializer
-from timetable.users.models import User
-
-
-class UserViewSet(RetrieveModelMixin, ListModelMixin, UpdateModelMixin, GenericViewSet):
-    serializer_class = UserSerializer
-    queryset = User.objects.all()
-    lookup_field = "username"
-
-    def get_queryset(self, *args, **kwargs):
-        assert isinstance(self.request.user.id, int)
-        return self.queryset.filter(id=self.request.user.id)
-
-    @action(detail=False)
-    def me(self, request):
-        serializer = UserSerializer(request.user, context={"request": request})
-        return Response(status=status.HTTP_200_OK, data=serializer.data)
+from timetable.users.api.response_schemes import StudentResponseSerializer
+from timetable.users.api.response_schemes import TeacherResponseSerializer
+from timetable.users.api.response_schemes import UnknownResponseSerializer
+from timetable.users.api.serializers import BaseTeacherSerializer
+from timetable.users.api.serializers import StudentSerializer
 
 
-class UserDetailView(LoginRequiredMixin, DetailView):
-    model = User
-    slug_field = "username"
-    slug_url_kwarg = "username"
+@extend_schema(
+    responses={
+        200: OpenApiResponse(
+            response=inline_serializer(
+                name="UserInfoResponse",
+                fields={
+                    "student": StudentResponseSerializer(),
+                    "teacher": TeacherResponseSerializer(),
+                    "unknown": UnknownResponseSerializer(),
+                },
+            ),
+            description="User info based on role",
+        ),
+    },
+)
+class UserInfoView(APIView):
+    """
+    # Возвращает информацию о текущем авторизованном пользователе и его роли в системе.
 
+    В зависимости от типа пользователя (студент или преподаватель), возвращается соответствующая структура данных:
+    - Если пользователь является студентом, возвращаются его данные в формате `StudentSerializer`.
+    - Если пользователь является преподавателем, возвращаются его данные в формате `BaseTeacherSerializer`.
+    - Если пользователь не привязан ни к студенту, ни к преподавателю — возвращается роль `unknown`..
+    """
 
-user_detail_view = UserDetailView.as_view()
+    authentication_classes = [JWTAuthentication]
 
+    def get(self, request):
+        user = request.user
 
-class UserUpdateView(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
-    model = User
-    fields = ["name"]
-    success_message = _("Information successfully updated")
+        if hasattr(user, "student"):
+            data = StudentSerializer(user.student).data
+            return Response({"role": "student", "data": data})
 
-    def get_success_url(self) -> str:
-        assert self.request.user.is_authenticated  # type guard
-        return self.request.user.get_absolute_url()
+        if hasattr(user, "teacher"):
+            data = BaseTeacherSerializer(user.teacher).data
+            return Response({"role": "teacher", "data": data})
 
-    def get_object(self, queryset: QuerySet | None = None) -> User:
-        assert self.request.user.is_authenticated  # type guard
-        return self.request.user
-
-
-user_update_view = UserUpdateView.as_view()
-
-
-class UserRedirectView(LoginRequiredMixin, RedirectView):
-    permanent = False
-
-    def get_redirect_url(self) -> str:
-        return reverse("api:users:detail", kwargs={"username": self.request.user.username})
-
-
-user_redirect_view = UserRedirectView.as_view()
+        return Response({"role": "unknown", "user": "Anonymous"})

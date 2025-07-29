@@ -7,11 +7,11 @@ env:
 
 on:
   pull_request:
-    branches: ['master', 'main']
+    branches: ["master", "main", "feature/opensearch"]
     paths-ignore: ['docs/**']
 
   push:
-    branches: ['master', 'main']
+    branches: ['master', 'main',]
     paths-ignore: ['docs/**']
 
 concurrency:
@@ -49,9 +49,6 @@ jobs:
 
       - name: Build the Stack
         run: docker compose -f docker-compose.local.yml build django
-
-      - name: Build the docs
-        run: docker compose -f docker-compose.docs.yml build docs
 
       - name: Check DB Migrations
         run: docker compose -f docker-compose.local.yml run --rm django python manage.py makemigrations --check
