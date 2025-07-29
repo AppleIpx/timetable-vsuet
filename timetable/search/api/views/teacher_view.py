@@ -10,6 +10,27 @@ from timetable.search.query_generators.teacher_search_query_generator import Tea
 
 @extend_schema_view(get=extend_schema(parameters=[RequestSearchSerializer]))
 class TeacherSearchView(ListAPIView):
+    """
+    # Поиск преподавателей по части имени, фамилии или отчеству.
+
+    ## Данный эндпоинт позволяет выполнять "умный" полнотекстовый поиск преподавателей
+    ## с поддержкой:
+    - поиска по первой части слова,
+    - поиска с учетом опечаток,
+    - поиска по подстроке.
+
+    ## Поиск производится по полям:
+    - `first_name` — имя,
+    - `last_name` — фамилия,
+    - `patronymic` — отчество.
+
+    ## Параметры запроса:
+    - `query` (str, min_length=2): Поисковая строка, по которой будет производиться поиск.
+
+    ## Возвращает:
+    - Список преподавателей.
+    """
+
     request_serializer_class = RequestSearchSerializer
     serializer_class = TeacherSearchSerializer
 

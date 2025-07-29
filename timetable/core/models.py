@@ -3,6 +3,7 @@ import datetime
 from django.db import models
 
 from timetable.core.enums import AUTO
+from timetable.core.enums import FILTER_TYPE_OF_WEEK_CHOICES
 from timetable.core.enums import FRIDAY
 from timetable.core.enums import MONDAY
 from timetable.core.enums import RULE_OF_REPEATS
@@ -157,7 +158,7 @@ class ScheduleAnchor(models.Model):
     end_date = models.DateField("Дата окончания учебного семестра", default=datetime.date.today)
     week_type = models.CharField(
         max_length=20,
-        choices=TYPE_OF_WEEK_CHOICES,
+        choices=FILTER_TYPE_OF_WEEK_CHOICES,
         verbose_name="Тип недели (Ч/З) в день начала занятий",
     )
 
