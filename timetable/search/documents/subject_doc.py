@@ -3,6 +3,7 @@ from django_opensearch_dsl import fields
 from django_opensearch_dsl.registries import registry
 
 from timetable.core.models import Subject
+from timetable.search.settings import COMMON_INDEX_SETTINGS
 
 
 @registry.register_document
@@ -32,31 +33,7 @@ class SubjectDocument(Document):
 
     class Index:
         name = "subjects"
-        settings = {
-            "number_of_shards": 1,
-            "number_of_replicas": 0,
-            "analysis": {
-                "filter": {
-                    "edge_ngram_filter": {
-                        "type": "edge_ngram",
-                        "min_gram": 2,
-                        "max_gram": 20,
-                    },
-                },
-                "analyzer": {
-                    "ngram_analyzer": {
-                        "type": "custom",
-                        "tokenizer": "standard",
-                        "filter": ["lowercase", "edge_ngram_filter"],
-                    },
-                    "ngram_search_analyzer": {
-                        "type": "custom",
-                        "tokenizer": "standard",
-                        "filter": ["lowercase"],
-                    },
-                },
-            },
-        }
+        settings = COMMON_INDEX_SETTINGS
 
     class Django:
         model = Subject
