@@ -1,3 +1,4 @@
+import logging
 from abc import ABC
 from abc import abstractmethod
 from datetime import date
@@ -14,6 +15,9 @@ from timetable.core.enums import EveryWeek
 from timetable.core.models import ScheduleAnchor
 from timetable.core.models import Subject
 from timetable.core.models import SubjectRepeat
+from timetable.search.documents.subject_doc import SubjectDocument
+
+logger = logging.getLogger(__name__)
 
 MOSCOW_TZ = timezone("Europe/Moscow")
 
@@ -85,6 +89,13 @@ class TwoWeeklyRepeatDateUpdater(BaseRepeatDateUpdater):
 
 
 class SubjectRepeatService:
+    """
+    Сервис для обработки повторяющихся событий предмета.
+
+    Создает, обновляет и удаляет даты повторений в зависимости от правила повторения.
+    Поддерживает транзакционность и обновление поискового индекса.
+    """
+
     _updaters: dict[str, type[BaseRepeatDateUpdater]] = {
         EveryWeek: WeeklyRepeatDateUpdater,
         EveryTwoWeeks: TwoWeeklyRepeatDateUpdater,
@@ -94,11 +105,20 @@ class SubjectRepeatService:
         self.subject = subject
 
     def __call__(self) -> None:
-        """Входная точка сервиса."""
+        """
+        Запускает процесс создания повторяющихся дат для предмета.
+
+        Является основной точкой входа в сервис.
+        """
         self._create_event_repeat_dates()
 
     @transaction.atomic
     def _create_event_repeat_dates(self) -> None:
+        """
+        Создает даты повторений на основе правила повторения предмета.
+        Удаляет старые даты, если они есть, и создает новые.
+        Вызывает исключение, если правило повторения неизвестно.
+        """
         updater_class = self._updaters.get(self.subject.rule_of_repeat)
         if not updater_class:
             msg_error = "Неизвестный тип повторения."
@@ -112,9 +132,11 @@ class SubjectRepeatService:
         SubjectRepeat.objects.bulk_create(repeat_dates)
 
         if settings.USE_OPENSEARCH:
-            self.update_opensearch_subjects_index(repeat_dates=repeat_dates)
+            self.update_opensearch_subjects_index()
 
-    def update_opensearch_subjects_index(self, repeat_dates: list[SubjectRepeat]) -> None:
-        # SubjectDocument.search().filter("term", id=self.subject.id).delete()  # noqa: ERA001
-        # SubjectDocument().update([self.subject], action="index")  # noqa: ERA001
-        ...
+    def update_opensearch_subjects_index(self) -> None:
+        """Обновляет индекс OpenSearch для предмета с учетом новых дат повторений."""
+        logger.info("The process of updating the Opensearch indexes has begun")
+        SubjectDocument.search().filter("term", id=self.subject.id).delete()
+        SubjectDocument().update([self.subject], action="index")
+        logger.info("Opensearch indexes is completed")
