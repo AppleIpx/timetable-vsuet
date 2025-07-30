@@ -27,5 +27,5 @@ djangorestframework_simplejwt==5.5.0  # https://django-rest-framework-simplejwt.
 drf-spectacular==0.28.0  # https://github.com/tfranzel/drf-spectacular
 django-filter==25.1
 # Opensearch
-opensearch-py==2.6.0  # https://github.com/opensearch-project/opensearch-py
+opensearch-py==3.0.0  # https://github.com/opensearch-project/opensearch-py
 django-opensearch-dsl==0.6.2  # https://github.com/Codoc-os/django-opensearch-dsl
