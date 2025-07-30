@@ -234,6 +234,9 @@ EMAIL_TIMEOUT = 5
 ADMIN_URL = "admin/"
 # https://docs.djangoproject.com/en/dev/ref/settings/#admins
 ADMINS = [("""Daniel Roy Greenfeld""", "daniel-roy-greenfeld@example.com")]
+DJANGO_SUPERUSER_USERNAME = env("DJANGO_SUPERUSER_USERNAME")
+DJANGO_SUPERUSER_EMAIL = env("DJANGO_SUPERUSER_EMAIL")
+DJANGO_SUPERUSER_PASSWORD = env("DJANGO_SUPERUSER_PASSWORD")
 # https://docs.djangoproject.com/en/dev/ref/settings/#managers
 MANAGERS = ADMINS
 # https://cookiecutter-django.readthedocs.io/en/latest/settings.html#other-environment-settings

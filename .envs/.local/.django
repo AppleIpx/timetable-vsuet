@@ -22,3 +22,9 @@ TIMETABLE_URL=https://timetable.vsuet.ru/index.php
 # ------------------------------------------------------------------------------
 USE_OPENSEARCH=True
 OPENSEARCH_URL=http://opensearch:9200
+
+# DJANGO_ADMIN_PANEL
+# ------------------------------------------------------------------------------
+DJANGO_SUPERUSER_USERNAME = admin
+DJANGO_SUPERUSER_EMAIL = admin@admin.ru
+DJANGO_SUPERUSER_PASSWORD = admin
