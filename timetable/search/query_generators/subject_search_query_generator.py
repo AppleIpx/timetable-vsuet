@@ -9,15 +9,19 @@ class SubjectSearchQueryGenerator:
         q = Q(
             "bool",
             should=[
+                # Поиск по названию предмета с нечетким соответствием (fuzziness="AUTO" позволяет опечатки)
                 Q("match", subject_name={"query": query, "fuzziness": "AUTO"}),
+                # Точное совпадение
+                Q("term", **{"group_name.raw": query}),
+                Q("term", **{"audience_name.raw": query}),
+                # Нечеткий поиск
                 Q("match", teacher_first_name={"query": query, "fuzziness": "AUTO"}),
                 Q("match", teacher_last_name={"query": query, "fuzziness": "AUTO"}),
                 Q("match", teacher_patronymic={"query": query, "fuzziness": "AUTO"}),
-                Q("match", audience_name={"query": query, "fuzziness": "AUTO"}),
-                Q("term", **{"group_name.raw": query}),
-                Q("wildcard", teacher_first_name=f"*{query.lower()}*"),
-                Q("wildcard", teacher_last_name=f"*{query.lower()}*"),
-                Q("wildcard", teacher_patronymic=f"*{query.lower()}*"),
+                # Поиск по частичному совпадению
+                Q("wildcard", teacher_first_name=f"*{query}*"),
+                Q("wildcard", teacher_last_name=f"*{query}*"),
+                Q("wildcard", teacher_patronymic=f"*{query}*"),
             ],
             minimum_should_match=1,
         )

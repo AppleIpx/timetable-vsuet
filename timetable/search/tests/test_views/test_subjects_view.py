@@ -1,7 +1,10 @@
 import pytest
 from rest_framework import status
 
+from timetable.core.test.factories.subject import SubjectFactory
 from timetable.search.tests.utils import update_subject_opensearch_index
+
+pytestmark = pytest.mark.django_db
 
 
 def compare_response(subject, response):
@@ -33,12 +36,13 @@ def compare_response(subject, response):
     assert subject_data["subgroup"] == subject.subgroup
 
 
-@pytest.mark.django_db
 def test_get_subject_detail_by_filter(user_api_client, clear_opensearch_indexes, subject):
     """
     Тест проверяет, что при указании не менее 2 символов в полях,
     будет выводиться нужный список предметов совпадающие с введенными символами через OpenSearch.
     """
+    subjects = SubjectFactory.create_batch(size=5)
+    subjects.append(subject)
     update_subject_opensearch_index(subject)
     prefix = subject.name[:2]
     response = user_api_client.get(
@@ -53,6 +57,8 @@ def test_get_subject_detail_by_audience_name_filter(user_api_client, clear_opens
     Тест проверяет, что если в поиске указать название аудитории(полностью),
     то выведется список всех предметов, которые проводятся в ней
     """
+    subjects = SubjectFactory.create_batch(size=5)
+    subjects.append(subject)
     update_subject_opensearch_index(subject)
     audience_name = subject.audience.name
     response = user_api_client.get(
@@ -95,6 +101,8 @@ def test_get_subject_detail_by_group_name_filter(user_api_client, clear_opensear
     Тест проверяет, что если в поиске указать название учебной группы(полностью),
     то выведется список всех предметов, которые принадлежат этой группе
     """
+    subjects = SubjectFactory.create_batch(size=5)
+    subjects.append(subject)
     update_subject_opensearch_index(subject)
     group_name = subject.group.name
     response = user_api_client.get(

@@ -11,7 +11,7 @@ router = DefaultRouter() if settings.DEBUG else SimpleRouter()
 
 app_name = "api"
 urlpatterns = [
-    path("users/", include("timetable.users.urls")),
+    path("users/", include("timetable.users.urls", namespace="users")),
     path("timetable/", include("timetable.core.urls")),
     path("search/", include("timetable.search.urls")),
     path("token/", TokenObtainPairView.as_view(), name="token_obtain_pair"),
