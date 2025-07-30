@@ -5,7 +5,7 @@ from timetable.core.models import Audience
 
 
 class AudienceFactory(DjangoModelFactory):
-    name = Faker("name")
+    name = Faker("word")
 
     class Meta:
         model = Audience

@@ -12,6 +12,8 @@ from timetable.users.api.views.user import UserInfoView
 router = DefaultRouter() if settings.DEBUG else SimpleRouter()
 router.register("teachers", TeacherView, basename="teachers")
 
+app_name = "users"
+
 urlpatterns: list[URLPattern | URLResolver] = [
     path("", include(router.urls)),
     path("me/", UserInfoView.as_view(), name="user-info"),

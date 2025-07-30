@@ -24,7 +24,7 @@ class SubjectDocument(Document):
         search_analyzer="ngram_search_analyzer",
     )
     group_name = fields.TextField(attr="group.name", fields={"raw": fields.KeywordField()})
-    audience_name = fields.TextField(attr="audience.name")
+    audience_name = fields.TextField(attr="audience.name", fields={"raw": fields.KeywordField()})
     subject_name = fields.TextField(
         attr="name",
         analyzer="ngram_analyzer",
