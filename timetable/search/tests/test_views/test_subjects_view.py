@@ -10,6 +10,7 @@ pytestmark = pytest.mark.django_db
 def compare_response(subject, response):
     data = response.json()
     assert response.status_code == status.HTTP_200_OK
+    assert len(data) == 1
     subject_data = data[0]
 
     assert subject_data["id"] == subject.id
