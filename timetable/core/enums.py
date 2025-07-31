@@ -38,8 +38,8 @@ TYPE_OF_WEEK_CHOICES = [
 ]
 
 FILTER_TYPE_OF_WEEK_CHOICES = [
-    ("NUM", "Числитель"),
-    ("DEN", "Знаменатель"),
+    (NUMERATOR, "Числитель"),
+    (DENOMINATOR, "Знаменатель"),
 ]
 
 TYPE_OF_CLASSES_CHOICES = [

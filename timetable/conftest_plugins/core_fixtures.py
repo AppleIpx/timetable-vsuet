@@ -2,6 +2,8 @@ import pytest
 
 from timetable.core.enums import EveryWeek
 from timetable.core.test.factories.audience import AudienceFactory
+from timetable.core.test.factories.group import GroupFactory
+from timetable.core.test.factories.schedule_anchor import ScheduleAnchorFactory
 from timetable.core.test.factories.subject import SubjectFactory
 
 
@@ -27,3 +29,15 @@ def subject_with_everyweek_repeat(audience):
 def audience():
     """Фикстура по созданию аудитории"""
     return AudienceFactory()
+
+
+@pytest.fixture
+def group():
+    """Фикстура по созданию группы"""
+    return GroupFactory()
+
+
+@pytest.fixture
+def start_semester():
+    """Фикстура по созданию опорной даты расписания"""
+    return ScheduleAnchorFactory()

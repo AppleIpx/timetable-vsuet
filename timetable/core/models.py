@@ -1,11 +1,14 @@
 import datetime
+import logging
 
+from django.core.exceptions import ValidationError
 from django.db import models
 
 from timetable.core.enums import AUTO
 from timetable.core.enums import FILTER_TYPE_OF_WEEK_CHOICES
 from timetable.core.enums import FRIDAY
 from timetable.core.enums import MONDAY
+from timetable.core.enums import NUMERATOR
 from timetable.core.enums import RULE_OF_REPEATS
 from timetable.core.enums import SATURDAY
 from timetable.core.enums import SUNDAY
@@ -16,7 +19,10 @@ from timetable.core.enums import TYPE_OF_WEEK_CHOICES
 from timetable.core.enums import WEDNESDAY
 from timetable.core.enums import WITHOUT_REPETITION
 from timetable.core.utils.calculation_of_the_type_of_week import calculating_a_type_of_week
+from timetable.core.utils.calculation_of_the_type_of_week import default_end_date
 from timetable.users.models import Teacher
+
+logger = logging.getLogger(__name__)
 
 
 class BaseModel(models.Model):
@@ -84,7 +90,7 @@ class Subject(BaseModel):
         max_length=20,
         verbose_name="Тип недели",
         choices=TYPE_OF_WEEK_CHOICES,
-        default="",
+        default=AUTO,
     )
     type_of_classes = models.CharField(
         max_length=30,
@@ -129,11 +135,16 @@ class Subject(BaseModel):
 
     def clean(self):
         start_date_semester = ScheduleAnchor.objects.first()
+        type_of_week = calculating_a_type_of_week(
+            target_date=self.date,
+            start_date_semester=start_date_semester,
+        )
         if self.type_of_week == AUTO:
-            self.type_of_week = calculating_a_type_of_week(
-                target_date=self.date,
-                start_date_semester=start_date_semester,
-            )
+            self.type_of_week = type_of_week
+
+        if self.type_of_week != type_of_week:
+            msg_error = f"Тип недели для {self.date} должен быть '{type_of_week}', а не '{self.type_of_week}'."
+            raise ValidationError(msg_error)
 
 
 class SubjectRepeat(models.Model):
@@ -155,11 +166,12 @@ class SubjectRepeat(models.Model):
 
 class ScheduleAnchor(models.Model):
     start_date = models.DateField("Дата начала учебного семестра", default=datetime.date.today)
-    end_date = models.DateField("Дата окончания учебного семестра", default=datetime.date.today)
+    end_date = models.DateField("Дата окончания учебного семестра", default=default_end_date)
     week_type = models.CharField(
         max_length=20,
         choices=FILTER_TYPE_OF_WEEK_CHOICES,
         verbose_name="Тип недели (Ч/З) в день начала занятий",
+        default=NUMERATOR,
     )
 
     class Meta:

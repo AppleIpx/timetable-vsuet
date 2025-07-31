@@ -119,12 +119,12 @@ class SubjectRepeatService:
         Удаляет старые даты, если они есть, и создает новые.
         Вызывает исключение, если правило повторения неизвестно.
         """
+        if self.subject.rule_of_repeat == WITHOUT_REPETITION:
+            return
         updater_class = self._updaters.get(self.subject.rule_of_repeat)
         if not updater_class:
             msg_error = "Неизвестный тип повторения."
             raise ValueError(msg_error)
-        if self.subject.rule_of_repeat == WITHOUT_REPETITION:
-            return
 
         self.subject.repeat_dates.all().delete()
         updater = updater_class(self.subject)
