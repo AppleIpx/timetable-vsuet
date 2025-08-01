@@ -23,8 +23,18 @@ class SubjectDocument(Document):
         analyzer="ngram_analyzer",
         search_analyzer="ngram_search_analyzer",
     )
-    group_name = fields.TextField(attr="group.name", fields={"raw": fields.KeywordField()})
-    audience_name = fields.TextField(attr="audience.name", fields={"raw": fields.KeywordField()})
+    group_name = fields.TextField(
+        attr="group.name",
+        fields={
+            "raw": fields.KeywordField(normalizer="lowercase_normalizer"),
+        },
+    )
+    audience_name = fields.TextField(
+        attr="audience.name",
+        fields={
+            "raw": fields.KeywordField(normalizer="lowercase_normalizer"),
+        },
+    )
     subject_name = fields.TextField(
         attr="name",
         analyzer="ngram_analyzer",

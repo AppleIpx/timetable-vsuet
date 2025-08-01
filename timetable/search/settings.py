@@ -21,5 +21,11 @@ COMMON_INDEX_SETTINGS = {
                 "filter": ["lowercase"],
             },
         },
+        "normalizer": {
+            "lowercase_normalizer": {
+                "type": "custom",
+                "filter": ["lowercase"],
+            },
+        },
     },
 }

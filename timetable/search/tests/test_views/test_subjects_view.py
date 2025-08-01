@@ -43,6 +43,8 @@ def test_get_subject_detail_by_filter(user_api_client, clear_opensearch_indexes,
     будет выводиться нужный список предметов совпадающие с введенными символами через OpenSearch.
     """
     subjects = SubjectFactory.create_batch(size=5)
+    subject.name = "уникальный предмет"
+    subject.save()
     subjects.append(subject)
     update_subject_opensearch_index(subject)
     prefix = subject.name[:2]
