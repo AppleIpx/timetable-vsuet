@@ -7,6 +7,7 @@ from django.db import models
 from timetable.core.enums import AUTO
 from timetable.core.enums import FILTER_TYPE_OF_WEEK_CHOICES
 from timetable.core.enums import FRIDAY
+from timetable.core.enums import LECTURE
 from timetable.core.enums import MONDAY
 from timetable.core.enums import NUMERATOR
 from timetable.core.enums import RULE_OF_REPEATS
@@ -124,6 +125,10 @@ class Subject(BaseModel):
     )
     subgroup = models.PositiveSmallIntegerField(
         verbose_name="Подгруппа",
+        help_text=(
+            "Укажите номер подгруппы: 1 или 2 для практик и лабораторных. "
+            "Для лекций укажите 3 (означает: для всей группы)."
+        ),
     )
 
     class Meta:
@@ -144,6 +149,14 @@ class Subject(BaseModel):
 
         if self.type_of_week != type_of_week:
             msg_error = f"Тип недели для {self.date} должен быть '{type_of_week}', а не '{self.type_of_week}'."
+            raise ValidationError(msg_error)
+
+        if self.type_of_classes == LECTURE and self.subgroup != 3:  # noqa: PLR2004
+            msg_error = "Для лекций необходимо указать '3' в поле «Подгруппа» (означает: вся группа)."
+            raise ValidationError(msg_error)
+
+        if self.type_of_classes != LECTURE and self.subgroup not in (1, 2):
+            msg_error = "Для практических и лабораторных занятий нужно указать подгруппу 1 или 2."
             raise ValidationError(msg_error)
 
 
