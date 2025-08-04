@@ -50,7 +50,7 @@ class TimetableViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
                 "teacher",
                 "group",
             )
-            .order_by("date")
+            .order_by("date", "time_subject__start_time")
             .distinct()
         )
 
