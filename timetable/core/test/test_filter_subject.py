@@ -9,6 +9,7 @@ from timetable.core.enums import DENOMINATOR
 from timetable.core.enums import LECTURE
 from timetable.core.enums import NUMERATOR
 from timetable.core.models import Subject
+from timetable.core.models import TimeSubject
 from timetable.core.test.factories.subject import SubjectFactory
 
 pytestmark = pytest.mark.django_db
@@ -81,7 +82,7 @@ def test_filter_date_max_subject(user_api_client, start_semester):
 
 def test_filter_date_min_subject(user_api_client, start_semester):
     """
-    Тестирует фильтрацию расписания по миниммальной дате (date_min).
+    Тестирует фильтрацию расписания по минимальной дате (date_min).
 
     Проверяет, что API возвращает только предметы, у которых дата превышает указанный date_min.
     """
@@ -97,6 +98,32 @@ def test_filter_date_min_subject(user_api_client, start_semester):
 
     assert response.status_code == status.HTTP_200_OK
     assert returned_ids == expected_ids
+
+
+def test_filter_ordering_for_date_subject(user_api_client, start_semester):
+    """
+    Тест проверяет, что при фильтрации предметов по дате,
+    они возвращаются в правильном порядке в соответствии с временем начала пары.
+
+    Создаются три предмета с одной и той же датой, но разным временем начала занятий.
+    Ожидается, что API вернёт их в порядке возрастания времени начала (start_time).
+    """
+    time_1 = TimeSubject.objects.get(number=1)
+    time_2 = TimeSubject.objects.get(number=2)
+    time_3 = TimeSubject.objects.get(number=3)
+
+    date = start_semester.start_date
+    subject1 = SubjectFactory(date=date, time_subject=time_2)
+    subject2 = SubjectFactory(date=date, time_subject=time_1)
+    subject3 = SubjectFactory(date=date, time_subject=time_3)
+
+    expected_order = [subject2.id, subject1.id, subject3.id]
+    response = user_api_client.get("/api/timetable/")
+    result_ids = [item["id"] for item in response.json()]
+
+    assert response.status_code == status.HTTP_200_OK
+    assert len(result_ids) == len(expected_order)
+    assert result_ids == expected_order
 
 
 def test_filter_group_name_subject(user_api_client, start_semester, group):
