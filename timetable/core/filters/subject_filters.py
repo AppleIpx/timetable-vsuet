@@ -13,7 +13,7 @@ class SubjectFilter(filters.FilterSet):
 
     type_of_week = filters.ChoiceFilter(choices=FILTER_TYPE_OF_WEEK_CHOICES)
     group__name = filters.CharFilter(field_name="group__name", lookup_expr="exact")
-    subgroup = filters.NumberFilter(field_name="subgroup", lookup_expr="exact")
+    subgroup = filters.NumberFilter(method="filter_by_subgroup", label="Подгруппа")
 
     def filter_by_date_min(self, queryset, name, value):
         """Фильтр по дате начала или повторения после выбранной даты."""
@@ -24,6 +24,17 @@ class SubjectFilter(filters.FilterSet):
         """Фильтр по дате начала или повторения до выбранной даты."""
         utc_value = value.replace(tzinfo=UTC)
         return queryset.filter(Q(date__lte=utc_value) | Q(repeat_dates__date__lte=utc_value)).distinct()
+
+    def filter_by_subgroup(self, queryset, name, value):
+        """
+        Если фильтр по подгруппе передан — ищем только по ней и по лекциям (3).
+        Если фильтр не передан — возвращаем всё (в т.ч. лекции).
+        """
+        if value in (1, 2):
+            return queryset.filter(Q(subgroup=value) | Q(subgroup=3))
+        if value == 3:  # noqa: PLR2004
+            return queryset.filter(subgroup=3)
+        return queryset
 
     class Meta:
         model = Subject

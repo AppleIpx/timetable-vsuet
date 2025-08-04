@@ -7,6 +7,7 @@ from timetable.core.models import ScheduleAnchor
 from timetable.core.models import Subject
 from timetable.core.models import SubjectRepeat
 from timetable.core.models import TimeSubject
+from timetable.core.utils.admin_filter import TypeOfWeekCustomFilter
 
 
 @admin.register(Audience)
@@ -23,8 +24,16 @@ class SubjectRepeatInline(admin.TabularInline):
 @admin.register(Subject)
 class SubjectAdmin(admin.ModelAdmin):
     search_fields = ("name",)
-    list_filter = ("type_of_week",)
-    list_display = ("name", "group__name", "audience__name", "teacher__first_name", "rule_of_repeat", "type_of_week")
+    list_filter = (TypeOfWeekCustomFilter,)
+    list_display = (
+        "name",
+        "group__name",
+        "type_of_classes",
+        "audience__name",
+        "teacher__first_name",
+        "rule_of_repeat",
+        "type_of_week",
+    )
     ordering = ["name"]
     inlines = (SubjectRepeatInline,)
 
