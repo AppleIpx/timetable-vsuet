@@ -1,5 +1,10 @@
+from datetime import datetime
+from datetime import time
+
 from django.db.models import Prefetch
 from django.utils import timezone
+from django.utils.timezone import make_aware
+from pytz import utc
 from rest_framework import mixins
 from rest_framework import viewsets
 from rest_framework.decorators import action
@@ -27,8 +32,8 @@ class TimetableViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
     - `GET /api/timetable/me/` — персональное расписание для текущего пользователя. Требует авторизации.
 
     ## Фильтры для списка (`/api/timetable/`):
-    - `date_min`: Дата начала или повторения после (в формате `YYYY-MM-DD`).
-    - `date_max`: Дата начала или повторения до (в формате `YYYY-MM-DD`).
+    - `date_min`: Дата начала или повторения после `включительно` (в формате `YYYY-MM-DD`).
+    - `date_max`: Дата начала или повторения до `включительно` (в формате `YYYY-MM-DD`).
     - `type_of_week`: Тип недели (например, `Числитель` или `Знаменатель`).
     - `group__name`: Название группы (например, `У-123`).
     - `subgroup`: Номер подгруппы (1, 2 или 3).
@@ -43,7 +48,7 @@ class TimetableViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
     filterset_class = SubjectFilter
 
     def get_queryset(self):
-        queryset = (
+        base_queryset = (
             Subject.objects.select_related(
                 "audience",
                 "time_subject",
@@ -54,16 +59,47 @@ class TimetableViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
             .distinct()
         )
 
+        repeat_dates_qs = self.get_filtered_repeat_dates()
+        return base_queryset.prefetch_related(
+            Prefetch("repeat_dates", queryset=repeat_dates_qs),
+        )
+
+    def get_filtered_repeat_dates(self):
+        """
+        Фильтрация повторяющихся дат в зависимости от query-параметров или действия `me`.
+        """
+        request = self.request
         action = getattr(self, "action", None)
+
+        date_min = request.query_params.get("date_min")
+        date_max = request.query_params.get("date_max")
+
+        date_min_dt = self._parse_datetime(date_min, is_start=True) if date_min else None
+        date_max_dt = self._parse_datetime(date_max, is_start=False) if date_max else None
 
         repeat_dates_qs = SubjectRepeat.objects.all()
 
         if action == "me":
-            current_time = timezone.now().date()
-            start_week, end_week = get_two_week_range(current_time)
-            repeat_dates_qs = repeat_dates_qs.filter(date__range=(start_week, end_week))
+            today = timezone.now().date()
+            start_week, end_week = get_two_week_range(today)
+            return repeat_dates_qs.filter(date__range=(start_week, end_week))
 
-        return queryset.prefetch_related(Prefetch("repeat_dates", queryset=repeat_dates_qs))
+        if date_min_dt and date_max_dt:
+            return repeat_dates_qs.filter(date__range=(date_min_dt, date_max_dt))
+        if date_min_dt:
+            return repeat_dates_qs.filter(date__gte=date_min_dt)
+        if date_max_dt:
+            return repeat_dates_qs.filter(date__lte=date_max_dt)
+
+        return repeat_dates_qs
+
+    def _parse_datetime(self, date_str: str, *, is_start: bool) -> datetime:
+        """
+        Парсит дату в datetime с учетом начала/конца дня и делает aware.
+        """
+        dt = datetime.fromisoformat(date_str).date()
+        time_part = time.min if is_start else time.max
+        return make_aware(datetime.combine(dt, time_part), timezone=utc)
 
     @action(detail=False, methods=["get"], permission_classes=[IsAuthenticated])
     def me(self, request: Request) -> Response:
