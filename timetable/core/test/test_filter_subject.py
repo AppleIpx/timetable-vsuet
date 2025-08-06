@@ -1,15 +1,20 @@
+from datetime import date
+from datetime import datetime
 from datetime import timedelta
 from urllib.parse import urlencode
 
 import pytest
 from django.utils import timezone
+from django.utils.dateparse import parse_date
 from rest_framework import status
 
 from timetable.core.enums import DENOMINATOR
 from timetable.core.enums import LECTURE
 from timetable.core.enums import NUMERATOR
+from timetable.core.enums import EveryTwoWeeks
 from timetable.core.models import Subject
 from timetable.core.models import TimeSubject
+from timetable.core.tasks import create_subject_repeat_dates_task
 from timetable.core.test.factories.subject import SubjectFactory
 
 pytestmark = pytest.mark.django_db
@@ -40,10 +45,40 @@ def create_dates_for_subjects(anchor):
 def get_expected_result(
     expected_subjects: list[Subject],
     response_data: dict,
+    date_max: date | None = None,
+    date_min: date | None = None,
 ):
+    """
+    Сравнивает ожидаемые и фактически возвращённые данные расписания,
+    а также проверяет корректность фильтрации по датам.
+
+    Проверки:
+    - Количество элементов в ответе соответствует ожидаемому.
+    - Все возвращённые ID совпадают с ожидаемыми.
+    - Все даты (`date` и `repeat_dates.date`) не превышают `date_max`, если указано.
+    - Все даты в `repeat_dates` не меньше `date_min`, если указано.
+
+    Возвращает:
+    - Кортеж из двух множеств: (ожидаемые ID, полученные ID).
+    """
     returned_ids = {item["id"] for item in response_data}
     expected_ids = {s.id for s in expected_subjects}
     assert len(response_data) == len(expected_subjects)
+
+    if date_max:
+        for item in response_data:
+            main_date = parse_date(item["date"])
+            assert main_date <= date_max
+
+            for repeat in item.get("repeat_dates", []):
+                repeat_date = datetime.fromisoformat(repeat["date"]).date()
+                assert repeat_date <= date_max
+    if date_min:
+        for item in response_data:
+            for repeat in item.get("repeat_dates", []):
+                repeat_date = datetime.fromisoformat(repeat["date"]).date()
+                assert repeat_date >= date_min
+
     return expected_ids, returned_ids
 
 
@@ -55,7 +90,7 @@ def create_some_subjects(anchor):
     начало, конец и три даты в середине.
     """
     dates = create_dates_for_subjects(anchor)
-    return [SubjectFactory(date=date) for date in dates]
+    return [SubjectFactory(date=date, rule_of_repeat=EveryTwoWeeks) for date in dates]
 
 
 def test_filter_date_max_subject(user_api_client, start_semester):
@@ -65,6 +100,8 @@ def test_filter_date_max_subject(user_api_client, start_semester):
     Проверяет, что API возвращает только предметы, у которых дата не превышает указанный date_max.
     """
     subjects = create_some_subjects(start_semester)
+    for subject in subjects:
+        create_subject_repeat_dates_task(subject.id)
     date_max = timezone.localdate() + timedelta(days=60)
     params = {"date_max": date_max.isoformat()}
     url = f"/api/timetable/?{urlencode(params)}"
@@ -74,7 +111,7 @@ def test_filter_date_max_subject(user_api_client, start_semester):
     response_data = response.json()
     expected_subjects = [s for s in subjects if s.date <= date_max]
 
-    returned_ids, expected_ids = get_expected_result(expected_subjects, response_data)
+    returned_ids, expected_ids = get_expected_result(expected_subjects, response_data, date_max=date_max)
 
     assert response.status_code == status.HTTP_200_OK
     assert returned_ids == expected_ids
@@ -87,14 +124,53 @@ def test_filter_date_min_subject(user_api_client, start_semester):
     Проверяет, что API возвращает только предметы, у которых дата превышает указанный date_min.
     """
     subjects = create_some_subjects(start_semester)
+    for subject in subjects:
+        create_subject_repeat_dates_task(subject.id)
     date_min = timezone.localdate() + timedelta(days=60)
-    params = {"date_max": date_min.isoformat()}
+    params = {"date_min": date_min.isoformat()}
     url = f"/api/timetable/?{urlencode(params)}"
     response = user_api_client.get(url)
     response_data = response.json()
-    expected_subjects = [s for s in subjects if date_min >= s.date]
+    expected_subjects = [
+        s for s in subjects if s.date >= date_min or any(r.date.date() >= date_min for r in s.repeat_dates.all())
+    ]
 
-    returned_ids, expected_ids = get_expected_result(expected_subjects, response_data)
+    returned_ids, expected_ids = get_expected_result(expected_subjects, response_data, date_min=date_min)
+
+    assert response.status_code == status.HTTP_200_OK
+    assert returned_ids == expected_ids
+
+
+def test_filter_range_dates_subject(user_api_client, start_semester):
+    """
+    Тестирует фильтрацию расписания по минимальной и максимальной дате (date_min, date_max)
+    Проверяет, что API возвращает только те предметы, которые попадают в диапазон дат
+    """
+    subjects = create_some_subjects(start_semester)
+
+    date_min = timezone.localdate() + timedelta(days=30)
+    date_max = timezone.localdate() + timedelta(days=90)
+
+    params = {
+        "date_min": date_min.isoformat(),
+        "date_max": date_max.isoformat(),
+    }
+    url = f"/api/timetable/?{urlencode(params)}"
+    response = user_api_client.get(url)
+    response_data = response.json()
+
+    expected_subjects = [
+        s
+        for s in subjects
+        if (date_min <= s.date <= date_max) or any(date_min <= r.date <= date_max for r in s.repeat_dates.all())
+    ]
+
+    returned_ids, expected_ids = get_expected_result(
+        expected_subjects,
+        response_data,
+        date_min=date_min,
+        date_max=date_max,
+    )
 
     assert response.status_code == status.HTTP_200_OK
     assert returned_ids == expected_ids

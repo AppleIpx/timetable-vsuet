@@ -1,15 +1,14 @@
-from datetime import UTC
-
 from django.db.models import Q
 from django_filters import rest_framework as filters
 
+from timetable.core.api.utils import filter_by_date_range
 from timetable.core.enums import FILTER_TYPE_OF_WEEK_CHOICES
 from timetable.core.models import Subject
 
 
 class SubjectFilter(filters.FilterSet):
-    date_min = filters.DateTimeFilter(method="filter_by_date_min", label="Дата начала или повторения после")
     date_max = filters.DateTimeFilter(method="filter_by_date_max", label="Дата начала или повторения до")
+    date_min = filters.DateTimeFilter(method="filter_by_date_min", label="Дата начала или повторения после")
 
     type_of_week = filters.ChoiceFilter(choices=FILTER_TYPE_OF_WEEK_CHOICES)
     group__name = filters.CharFilter(field_name="group__name", lookup_expr="exact")
@@ -17,13 +16,13 @@ class SubjectFilter(filters.FilterSet):
 
     def filter_by_date_min(self, queryset, name, value):
         """Фильтр по дате начала или повторения после выбранной даты."""
-        utc_value = value.replace(tzinfo=UTC)
-        return queryset.filter(Q(date__gte=utc_value) | Q(repeat_dates__date__gte=utc_value)).distinct()
+        date_max = self.data.get("date_max")
+        return filter_by_date_range(queryset, date_min=value, date_max=date_max)
 
     def filter_by_date_max(self, queryset, name, value):
         """Фильтр по дате начала или повторения до выбранной даты."""
-        utc_value = value.replace(tzinfo=UTC)
-        return queryset.filter(Q(date__lte=utc_value) | Q(repeat_dates__date__lte=utc_value)).distinct()
+        date_min = self.data.get("date_min")
+        return filter_by_date_range(queryset, date_min=date_min, date_max=value)
 
     def filter_by_subgroup(self, queryset, name, value):
         """
